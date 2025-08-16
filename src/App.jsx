@@ -16,21 +16,10 @@ import { LoginPage, DaftarPage } from './pages/LoginPage';
 import AdminLayout from './layouts/AdminLayout';
 import DashboardPage from './components/Admin/DashboardPage';
 import BeritaAdminPage from './components/Admin/BeritaAdminPage';
+import KategoriAdminPage from './components/Admin/KategoriAdminPage';
+import UserAdminPage from './components/Admin/UserAdminPage';
 
-// Komponen placeholder untuk halaman admin yang belum dibuat
-const KategoriAdminPage = () => (
-    <div className="container mx-auto p-8 text-center">
-        <h1 className="text-3xl font-bold">Halaman Kelola Kategori</h1>
-        <p className="mt-4">Fitur ini sedang dalam pengembangan.</p>
-    </div>
-);
-const UserAdminPage = () => (
-    <div className="container mx-auto p-8 text-center">
-        <h1 className="text-3xl font-bold">Halaman Kelola Pengguna</h1>
-        <p className="mt-4">Fitur ini sedang dalam pengembangan.</p>
-    </div>
-);
-
+// Komponen placeholder untuk halaman yang belum dibuat
 const KontakPage = () => (
     <div className="container mx-auto p-8 text-center">
         <h1 className="text-3xl font-bold">Halaman Kontak</h1>

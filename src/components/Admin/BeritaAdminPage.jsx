@@ -1,31 +1,103 @@
-// File: src/pages/Admin/BeritaAdminPage.jsx
+import React, { useState } from 'react';
+import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 
-import React from 'react';
-import { PlusCircle, Search } from 'lucide-react';
+// Data awal (bisa dikosongkan jika ingin memulai dari awal)
+const initialNewsData = [
+    { id: 1, title: 'Revolusi AI Generatif', category: 'Teknologi', author: 'Andi Wijaya', status: 'Published' },
+    { id: 2, title: 'Timnas Garuda Lolos', category: 'Olahraga', author: 'Budi Santoso', status: 'Published' },
+    { id: 3, title: 'Proyek Infrastruktur Baru', category: 'Ekonomi', author: 'Citra Lestari', status: 'Draft' },
+];
 
 const BeritaAdminPage = () => {
-    // Data dummy, idealnya ini dari API
-    const newsData = [
-        { id: 1, title: 'Revolusi AI Generatif', category: 'Teknologi', author: 'Andi Wijaya', status: 'Published' },
-        { id: 2, title: 'Timnas Garuda Lolos', category: 'Olahraga', author: 'Budi Santoso', status: 'Published' },
-        { id: 3, title: 'Proyek Infrastruktur Baru', category: 'Ekonomi', author: 'Citra Lestari', status: 'Draft' },
-    ];
+    const [newsData, setNewsData] = useState(initialNewsData);
+    const [isFormVisible, setIsFormVisible] = useState(false);
+    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', author: '', status: 'Draft' });
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentNews({ ...currentNews, [name]: value });
+    };
+
+    const handleAddNew = () => {
+        setCurrentNews({ id: null, title: '', category: '', author: '', status: 'Draft' });
+        setIsFormVisible(true);
+    };
+
+    const handleEdit = (news) => {
+        setCurrentNews(news);
+        setIsFormVisible(true);
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
+            setNewsData(newsData.filter(news => news.id !== id));
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (currentNews.id) {
+            // Update berita
+            setNewsData(newsData.map(news => (news.id === currentNews.id ? currentNews : news)));
+        } else {
+            // Tambah berita baru
+            const newNews = { ...currentNews, id: Date.now() }; // Gunakan timestamp sebagai ID unik
+            setNewsData([...newsData, newNews]);
+        }
+        setIsFormVisible(false);
+    };
+    
+    const filteredNews = newsData.filter(news => 
+        news.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Kelola Berita</h1>
-                <button className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                <button onClick={handleAddNew} className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
                     <PlusCircle size={20} className="mr-2" />
                     Tambah Berita
                 </button>
             </div>
+
+            {isFormVisible && (
+                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200/80 mb-6">
+                    <h2 className="text-xl font-bold mb-4">{currentNews.id ? 'Edit Berita' : 'Tambah Berita Baru'}</h2>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Judul</label>
+                            <input type="text" name="title" value={currentNews.title} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
+                            <input type="text" name="category" value={currentNews.category} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Penulis</label>
+                            <input type="text" name="author" value={currentNews.author} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
+                        </div>
+                         <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                            <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
+                                <option value="Published">Published</option>
+                                <option value="Draft">Draft</option>
+                            </select>
+                        </div>
+                        <div className="flex justify-end gap-4">
+                            <button type="button" onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg">Batal</button>
+                            <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">{currentNews.id ? 'Simpan Perubahan' : 'Simpan'}</button>
+                        </div>
+                    </form>
+                </div>
+            )}
             
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200/80">
                 <div className="mb-4">
                      <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input type="text" placeholder="Cari berita..." className="pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <input type="text" placeholder="Cari berita..." onChange={e => setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -40,7 +112,7 @@ const BeritaAdminPage = () => {
                             </tr>
                         </thead>
                         <tbody className="text-gray-700">
-                            {newsData.map(news => (
+                            {filteredNews.map(news => (
                                 <tr key={news.id} className="border-b border-gray-200 hover:bg-gray-50">
                                     <td className="py-3 px-4 font-medium">{news.title}</td>
                                     <td className="py-3 px-4">{news.category}</td>
@@ -50,9 +122,9 @@ const BeritaAdminPage = () => {
                                             {news.status}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-4">
-                                        <button className="text-blue-600 hover:underline mr-4">Edit</button>
-                                        <button className="text-red-600 hover:underline">Hapus</button>
+                                    <td className="py-3 px-4 flex gap-2">
+                                        <button onClick={() => handleEdit(news)} className="text-blue-600 hover:text-blue-800"><Edit size={18}/></button>
+                                        <button onClick={() => handleDelete(news.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18}/></button>
                                     </td>
                                 </tr>
                             ))}
