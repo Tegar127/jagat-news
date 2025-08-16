@@ -1,4 +1,4 @@
-// File: src/App.jsx (Modifikasi)
+// File: src/App.jsx
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
@@ -19,6 +19,10 @@ import BeritaAdminPage from './components/Admin/BeritaAdminPage';
 import KategoriAdminPage from './components/Admin/KategoriAdminPage';
 import UserAdminPage from './components/Admin/UserAdminPage';
 
+// Impor dari Context dan Protected Route
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
 // Komponen placeholder untuk halaman yang belum dibuat
 const KontakPage = () => (
     <div className="container mx-auto p-8 text-center">
@@ -34,16 +38,19 @@ const AppContent = () => {
 
     if (isAdminRoute) {
         return (
-            <AdminLayout>
-                <Routes>
-                    <Route path="/admin/dashboard" element={<DashboardPage />} />
-                    <Route path="/admin/berita" element={<BeritaAdminPage />} />
-                    <Route path="/admin/kategori" element={<KategoriAdminPage />} />
-                    <Route path="/admin/users" element={<UserAdminPage />} />
-                </Routes>
-            </AdminLayout>
+            <ProtectedRoute>
+                <AdminLayout>
+                    <Routes>
+                        <Route path="/admin/dashboard" element={<DashboardPage />} />
+                        <Route path="/admin/berita" element={<BeritaAdminPage />} />
+                        <Route path="/admin/kategori" element={<KategoriAdminPage />} />
+                        <Route path="/admin/users" element={<UserAdminPage />} />
+                    </Routes>
+                </AdminLayout>
+            </ProtectedRoute>
         );
     }
+    
     const noNavFooterRoutes = ['/login', '/daftar'];
     const shouldShowNavAndFooter = !noNavFooterRoutes.includes(location.pathname);
 
@@ -76,7 +83,9 @@ const AppContent = () => {
 export default function App() {
     return (
         <Router>
-            <AppContent />
+            <AuthProvider>
+                <AppContent />
+            </AuthProvider>
         </Router>
     );
 }
