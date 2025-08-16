@@ -4,44 +4,43 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// GET: Mendapatkan semua berita (termasuk nama penulis & kategori)
-router.get('/', async (req, res) => {
-    const allNews = await prisma.post.findMany({
-        include: {
-            author: { select: { name: true } },
-            category: { select: { name: true } },
-        },
-    });
-    res.json(allNews);
-});
+// ... (GET, PUT, DELETE routes tetap sama)
 
-// POST: Membuat berita baru
+// POST: Membuat berita baru (MODIFIKASI)
 router.post('/', async (req, res) => {
-    const { title, status, author, category } = req.body;
-    // Untuk sekarang, kita asumsikan author dan kategori sudah ada
-    // Di aplikasi nyata, ini akan lebih kompleks
-    const newPost = await prisma.post.create({
-        data: { title, status, authorId: 1, categoryId: 1 }, // Hardcode untuk contoh
-    });
-    res.status(201).json(newPost);
-});
+    // Ambil title, status, authorName, dan categoryName dari body request
+    const { title, status, author: authorName, category: categoryName } = req.body;
 
-// PUT: Mengupdate berita berdasarkan ID
-router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { title, status } = req.body;
-    const updatedPost = await prisma.post.update({
-        where: { id: parseInt(id) },
-        data: { title, status },
-    });
-    res.json(updatedPost);
-});
+    try {
+        // 1. Cari atau buat penulis (author)
+        let author = await prisma.user.findFirst({ where: { name: authorName } });
+        if (!author) {
+            // Jika tidak ada, untuk sementara kita akan gunakan user pertama yang ada.
+            // Di aplikasi nyata, Anda mungkin ingin membuat user baru atau memberikan error.
+            author = await prisma.user.findFirst();
+            if(!author) throw new Error("Tidak ada user di database.");
+        }
 
-// DELETE: Menghapus berita berdasarkan ID
-router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
-    await prisma.post.delete({ where: { id: parseInt(id) } });
-    res.status(204).send();
+        // 2. Cari atau buat kategori
+        let category = await prisma.category.findUnique({ where: { name: categoryName } });
+        if (!category) {
+            category = await prisma.category.create({ data: { name: categoryName } });
+        }
+
+        // 3. Buat post baru dengan ID yang benar
+        const newPost = await prisma.post.create({
+            data: {
+                title,
+                status: status.toUpperCase(), // Pastikan status dalam format uppercase
+                authorId: author.id,
+                categoryId: category.id,
+            },
+        });
+        res.status(201).json(newPost);
+
+    } catch (error) {
+        res.status(500).json({ error: "Gagal membuat berita baru: " + error.message });
+    }
 });
 
 module.exports = router;

@@ -95,12 +95,14 @@ const BeritaAdminPage = () => {
                             <input type="text" name="author" value={currentNews.author} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
                         </div>
                          <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
-                            <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
-                                <option value="Published">Published</option>
-                                <option value="Draft">Draft</option>
-                            </select>
-                        </div>
+                                <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                                <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
+                                    {/* Ubah nilai value menjadi huruf besar */}
+                                    <option value="PUBLISHED">Published</option>
+                                    <option value="DRAFT">Draft</option>
+                                </select>
+                            </div>
+
                         <div className="flex justify-end gap-4">
                             <button type="button" onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg">Batal</button>
                             <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">{currentNews.id ? 'Simpan Perubahan' : 'Simpan'}</button>
