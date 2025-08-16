@@ -1,10 +1,11 @@
 // src/pages/LoginPage.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // 1. Impor useAuth
 import portalLogo from '../assets/captcha.png'; 
 
-// --- Shared Helper Components ---
+// --- Komponen-komponen lain (GoogleIcon, HomeIcon, dll.) tetap sama ---
 const GoogleIcon = () => (
     <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48">
         <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 6.58C34.566 2.734 29.636 0 24 0C10.745 0 0 10.745 0 24s10.745 24 24 24s24-10.745 24-24c0-1.631-.144-3.211-.409-4.755z"></path>
@@ -56,13 +57,15 @@ const DummyRecaptcha = ({ onVerify }) => {
 // --- Form Components (Now using useNavigate hook) ---
 const SignInForm = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('admin@jagat.news'); // pre-fill untuk kemudahan testing
-    const [password, setPassword] = useState('password123'); // pre-fill untuk kemudahan testing
+    const { login } = useAuth(); // 2. Ambil fungsi login dari context
+    const [email, setEmail] = useState('admin@jagat.news');
+    const [password, setPassword] = useState('password123');
     const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = (e) => {
+    // 3. Modifikasi handleLogin untuk menggunakan context
+    const handleLogin = async (e) => {
         e.preventDefault();
         if (!email || !password) {
             setError('Silakan masukkan email dan password.');
@@ -76,11 +79,14 @@ const SignInForm = () => {
         setError('');
         setLoading(true);
 
-        // Simulate network request
-        setTimeout(() => {
-            navigate('/admin/dashboard');
+        try {
+            await login(email, password);
+            // Navigasi sudah di-handle di dalam AuthContext, jadi tidak perlu `Maps()` di sini
+        } catch (err) {
+            setError(err.message);
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
     
     const handleGoogleLogin = () => { console.log('Attempting Google Login...'); alert('Redirecting to Google for login... (Dummy)'); };
@@ -155,7 +161,7 @@ const SignUpForm = () => {
     );
 };
 
-// --- Page Components ---
+
 export const LoginPage = () => {
     return (
         <div className="bg-gray-300 min-h-screen flex items-center justify-center p-4 font-sans">
@@ -177,21 +183,3 @@ export const DaftarPage = () => {
         </div>
     );
 };
-
-// --- Main App Component (Simplified) ---
-export default function App() {
-    const [page, setPage] = useState('login'); // Can be 'login' or 'register'
-
-    // Based on the 'page' state, render either the Login or Register page.
-    // The onNavigate function is passed down to allow switching between them.
-    if (page === 'login') {
-        return <LoginPage onNavigate={setPage} />;
-    }
-
-    if (page === 'register') {
-        return <DaftarPage onNavigate={setPage} />;
-    }
-
-    // Default to LoginPage if state is somehow invalid
-    return <LoginPage onNavigate={setPage} />;
-}
