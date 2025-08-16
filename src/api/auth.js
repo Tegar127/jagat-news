@@ -1,34 +1,54 @@
-// Simulasi data pengguna dari database eksternal
-const mockDatabase = [
-    {
-        id: 1,
-        email: 'admin@jagat.news',
-        password: 'password123', // Di dunia nyata, ini akan di-hash
-        name: 'Admin Tegar',
-        role: 'Administrator'
-    },
-    {
-        id: 2,
-        email: 'budi@example.com',
-        password: 'user123',
-        name: 'User Budi',
-        role: 'User'
-    }
-];
+// src/api/auth.js
 
-// Fungsi ini menyimulasikan panggilan API ke server autentikasi
-export const login = (email, password) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            const user = mockDatabase.find(u => u.email === email);
+// Alamat base URL dari backend server Anda
+const API_URL = 'http://localhost:3001/api';
 
-            if (user && user.password === password) {
-                // Jangan kirim password kembali ke client
-                const { password, ...userData } = user;
-                resolve(userData);
-            } else {
-                reject(new Error('Email atau password salah.'));
-            }
-        }, 1000); // Simulasi delay jaringan 1 detik
+/**
+ * Fungsi untuk melakukan login ke API backend.
+ * @param {string} email 
+ * @param {string} password 
+ * @returns {Promise<object>} Data pengguna dan token
+ */
+export const login = async (email, password) => {
+    const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        // Jika response dari server tidak OK (misal: 401 Unauthorized), lempar error
+        throw new Error(data.message || 'Terjadi kesalahan saat login.');
+    }
+    
+    // Kembalikan data user dan token
+    return data; 
+};
+
+
+/**
+ * Fungsi untuk mendaftarkan pengguna baru.
+ * @param {object} userData - { name, email, password }
+ * @returns {Promise<object>} Pesan sukses dari server
+ */
+export const register = async (userData) => {
+    const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Gagal mendaftar.');
+    }
+    
+    return data;
 };

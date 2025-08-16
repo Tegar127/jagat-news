@@ -1,0 +1,19 @@
+
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin Tegar",
+      "email": "admin@jagat.news",
+      "password": "123.",
+      "role": "Administrator"
+    },
+    {
+      "id": 2,
+      "name": "User Budi",
+      "email": "budi@example.com",
+      "password": "$2a$10$fwr/Jc9pQnYsF.sKyJEm/uLz0i2b5bT2n2bK/fL3wY9oU6eFzL5e.",
+      "role": "User"
+    }
+  ]
+}
