@@ -29,10 +29,10 @@ const aboutContent = {
         { icon: <Briefcase className="w-8 h-8 text-red-600" />, title: "Profesionalisme", description: "Menyediakan berita dengan standar profesionalisme dan dedikasi tinggi." },
     ],
     team: [
-        { id: 1, name: "Dr. Citra Lestari", title: "Chief Executive Officer", imageUrl: "https://placehold.co/300x300/6366F1/FFFFFF?text=Citra" },
-        { id: 2, name: "Prof. Ananta Wijaya", title: "Chief Technology Officer", imageUrl: "https://placehold.co/300x300/10B981/FFFFFF?text=Ananta" },
-        { id: 3, name: "Dr. Bayu Prakoso", title: "Head of Editorial", imageUrl: "https://placehold.co/300x300/F59E0B/FFFFFF?text=Bayu" },
-        { id: 4, name: "Ms. Dina Rahmawati", title: "Community & Partnership Lead", imageUrl: "https://placehold.co/300x300/3B82F6/FFFFFF?text=Dina" },
+        { id: 1, name: "Tegar", title: "Chief Executive Officer", imageUrl: "https://placehold.co/300x300/6366F1/FFFFFF?text=Citra" },
+        { id: 2, name: "Teguh", title: "Chief Technology Officer", imageUrl: "https://placehold.co/300x300/10B981/FFFFFF?text=Ananta" },
+        { id: 3, name: "Tegas", title: "Head of Editorial", imageUrl: "https://placehold.co/300x300/F59E0B/FFFFFF?text=Bayu" },
+        { id: 4, name: "Tangkas", title: "Community & Partnership Lead", imageUrl: "https://placehold.co/300x300/3B82F6/FFFFFF?text=Dina" },
     ],
     cta: {
         title: "Siap Menjadi Lebih Terinformasi?",
