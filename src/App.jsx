@@ -1,5 +1,9 @@
+// File: src/App.jsx (Modifikasi)
+
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+
+// Import Halaman Publik
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -7,6 +11,14 @@ import BeritaPage from './pages/BeritaPage';
 import BeritaDetailPage from './pages/BeritaDetailPage';
 import AboutPage from './pages/AboutPage';
 import { LoginPage, DaftarPage } from './pages/LoginPage';
+
+// Import Layout dan Halaman Admin
+import AdminLayout from './layouts/AdminLayout';
+import DashboardPage from './src/Admin/DashboardPage';
+import BeritaAdminPage from './src/Admin/BeritaAdminPage';
+// Tambahkan import untuk KategoriAdminPage dan UserAdminPage jika sudah dibuat
+// import KategoriAdminPage from './pages/Admin/KategoriAdminPage';
+// import UserAdminPage from './pages/Admin/UserAdminPage';
 
 const KontakPage = () => (
     <div className="container mx-auto p-8 text-center">
@@ -16,8 +28,23 @@ const KontakPage = () => (
     </div>
 );
 
-const MainLayout = ({ children }) => {
+const AppContent = () => {
     const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith('/admin');
+
+    if (isAdminRoute) {
+        return (
+            <AdminLayout>
+                <Routes>
+                    <Route path="/admin/dashboard" element={<DashboardPage />} />
+                    <Route path="/admin/berita" element={<BeritaAdminPage />} />
+                    {/* <Route path="/admin/kategori" element={<KategoriAdminPage />} /> */}
+                    {/* <Route path="/admin/users" element={<UserAdminPage />} /> */}
+                </Routes>
+            </AdminLayout>
+        );
+    }
+    
     const noNavFooterRoutes = ['/login', '/daftar'];
     const shouldShowNavAndFooter = !noNavFooterRoutes.includes(location.pathname);
 
@@ -25,17 +52,6 @@ const MainLayout = ({ children }) => {
         <div className="bg-white font-sans antialiased flex flex-col min-h-screen">
             {shouldShowNavAndFooter && <Navbar />}
             <main className="flex-grow">
-                {children}
-            </main>
-            {shouldShowNavAndFooter && <Footer />}
-        </div>
-    );
-};
-
-export default function App() {
-    return (
-        <Router>
-            <MainLayout>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/berita" element={<BeritaPage />} />
@@ -52,7 +68,16 @@ export default function App() {
                         </div>
                     } />
                 </Routes>
-            </MainLayout>
+            </main>
+            {shouldShowNavAndFooter && <Footer />}
+        </div>
+    );
+};
+
+export default function App() {
+    return (
+        <Router>
+            <AppContent />
         </Router>
     );
 }
