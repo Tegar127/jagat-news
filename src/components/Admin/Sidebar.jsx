@@ -1,9 +1,14 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X } from 'lucide-react';
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
-    const { logout } = useAuth(); // Ambil fungsi logout dari context
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // Here you would typically clear any user session data
+        navigate('/login');
+    };
 
     const navLinks = [
         { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard" },

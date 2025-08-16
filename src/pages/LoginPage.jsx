@@ -1,6 +1,7 @@
+// src/pages/LoginPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
 import portalLogo from '../assets/captcha.png'; 
 
 // --- Shared Helper Components ---
@@ -55,14 +56,13 @@ const DummyRecaptcha = ({ onVerify }) => {
 // --- Form Components (Now using useNavigate hook) ---
 const SignInForm = () => {
     const navigate = useNavigate();
-    const { login } = useAuth(); // Ambil fungsi login dari context
     const [email, setEmail] = useState('admin@jagat.news'); // pre-fill untuk kemudahan testing
     const [password, setPassword] = useState('password123'); // pre-fill untuk kemudahan testing
     const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = async (e) => {
+    const handleLogin = (e) => {
         e.preventDefault();
         if (!email || !password) {
             setError('Silakan masukkan email dan password.');
@@ -76,14 +76,11 @@ const SignInForm = () => {
         setError('');
         setLoading(true);
 
-        try {
-            await login(email, password);
-            // Navigasi sudah di-handle di dalam AuthContext
-        } catch (err) {
-            setError(err.message);
-        } finally {
+        // Simulate network request
+        setTimeout(() => {
+            navigate('/admin/dashboard');
             setLoading(false);
-        }
+        }, 1000);
     };
     
     const handleGoogleLogin = () => { console.log('Attempting Google Login...'); alert('Redirecting to Google for login... (Dummy)'); };

@@ -34,16 +34,14 @@ const AppContent = () => {
 
     if (isAdminRoute) {
         return (
-            <ProtectedRoute>
-                <AdminLayout>
-                    <Routes>
-                        <Route path="/admin/dashboard" element={<DashboardPage />} />
-                        <Route path="/admin/berita" element={<BeritaAdminPage />} />
-                        <Route path="/admin/kategori" element={<KategoriAdminPage />} />
-                        <Route path="/admin/users" element={<UserAdminPage />} />
-                    </Routes>
-                </AdminLayout>
-            </ProtectedRoute>
+            <AdminLayout>
+                <Routes>
+                    <Route path="/admin/dashboard" element={<DashboardPage />} />
+                    <Route path="/admin/berita" element={<BeritaAdminPage />} />
+                    <Route path="/admin/kategori" element={<KategoriAdminPage />} />
+                    <Route path="/admin/users" element={<UserAdminPage />} />
+                </Routes>
+            </AdminLayout>
         );
     }
     const noNavFooterRoutes = ['/login', '/daftar'];
@@ -78,9 +76,7 @@ const AppContent = () => {
 export default function App() {
     return (
         <Router>
-            <AuthProvider>
-                <AppContent />
-            </AuthProvider>
+            <AppContent />
         </Router>
     );
 }
