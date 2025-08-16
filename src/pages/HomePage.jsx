@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Star, Cpu, Briefcase, Scale, Send, Paperclip, ShoppingBag, Download, Link as LinkIcon, Printer, Headset, Newspaper, TrendingUp, Globe } from 'lucide-react';
+import { Heart, MessageSquare, Star, Cpu, Briefcase, Scale, Send, Paperclip, ShoppingBag, Download, Link as LinkIcon, Printer, Headset, Newspaper, TrendingUp, Globe, X } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -70,65 +70,7 @@ const categories = [
 
 // === CHILD COMPONENTS ===
 
-const Modal = ({ isOpen, onClose, children }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-scale-in">
-                <div className="p-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
-                    <h3 className="text-lg font-bold text-gray-800">Detail Berita</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors"><X className="w-6 h-6" /></button>
-                </div>
-                <div className="overflow-y-auto">{children}</div>
-            </div>
-        </div>
-    );
-};
-
-const NewsDetailContent = ({ news }) => {
-    if(!news) return null;
-    return (
-        <div className="p-6 md:p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1">
-                     <img className="w-full h-auto object-cover rounded-lg shadow-md" src={news.imageUrl} alt={`Cover Berita ${news.title}`} />
-                     <div className="mt-6 space-y-3">
-                        <a href={`/berita/${news.id}`} className="flex items-center justify-center gap-3 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                            <Newspaper className="w-5 h-5"/>Baca Selengkapnya
-                        </a>
-                     </div>
-                </div>
-                <div className="lg:col-span-2">
-                    <span className="inline-block bg-blue-100 text-blue-700 text-sm font-semibold px-3 py-1 rounded-full mb-3">
-                        {news.category}
-                    </span>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
-                        {news.title}
-                    </h2>
-                    <p className="text-md text-gray-500 mb-4">
-                        Oleh: <span className="font-semibold text-gray-700">{news.author}</span>
-                    </p>
-                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-6 pb-6 border-b border-gray-200">
-                         <div className="flex items-center gap-2"><Star className="w-5 h-5 text-yellow-400 fill-current" /><span className="font-bold text-gray-800">{news.rating}</span></div>
-                        <div className="font-semibold text-gray-800">{news.comments} <span className="font-normal text-gray-600">Komentar</span></div>
-                        <p className="font-semibold text-gray-800">{news.publisher}</p>
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-800 mb-2">Ringkasan</h4>
-                    <p className="text-gray-600 leading-relaxed text-justify">{news.abstract}</p>
-                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                        <h5 className="font-bold text-gray-700 mb-2">Bagikan Berita</h5>
-                        <div className="flex flex-col md:flex-row gap-3">
-                            <input type="text" readOnly value={`https://jagat-news.id/berita/${news.id}`} className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                            <button className="flex-shrink-0 flex items-center justify-center gap-2 bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"><LinkIcon className="w-4 h-4" />Salin Tautan</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const NewsCard = ({ news, onDetailClick, index }) => (
+const NewsCard = ({ news, index }) => (
     <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl flex flex-col border border-gray-200/80"
         data-aos="fade-up"
         data-aos-duration="800"
@@ -149,7 +91,7 @@ const NewsCard = ({ news, onDetailClick, index }) => (
             </div>
         </div>
         <div className="p-3 bg-gray-50 border-t border-gray-200/80">
-            <button onClick={() => onDetailClick(news)} className="block w-full text-center bg-blue-100 text-blue-700 font-semibold py-2 rounded-lg hover:bg-blue-200 transition-colors duration-200">Lihat Detail</button>
+            <Link to={`/berita/${news.id}`} className="block w-full text-center bg-blue-100 text-blue-700 font-semibold py-2 rounded-lg hover:bg-blue-200 transition-colors duration-200">Lihat Detail</Link>
         </div>
     </div>
 );
@@ -218,10 +160,6 @@ const CategorySection = () => (
 );
 
 const FeaturedNewsSection = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedNews, setSelectedNews] = useState(null);
-    const handleOpenModal = (news) => { setSelectedNews(news); setIsModalOpen(true); };
-    const handleCloseModal = () => { setIsModalOpen(false); setSelectedNews(null); };
     return (
         <section id="featured" className="py-16 bg-gray-50">
             <div className="container mx-auto px-4">
@@ -229,7 +167,7 @@ const FeaturedNewsSection = () => {
                     Berita Unggulan
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">{featuredNews.map((j, index) => (
-                    <NewsCard key={j.id} news={j} onDetailClick={handleOpenModal} index={index} />
+                    <NewsCard key={j.id} news={j} index={index} />
                 ))}</div>
                  <div className="mt-12 text-center">
                     <a href="/berita" className="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full shadow-md border border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
@@ -238,7 +176,6 @@ const FeaturedNewsSection = () => {
                     </a>
                 </div>
             </div>
-            <Modal isOpen={isModalOpen} onClose={handleCloseModal}><NewsDetailContent news={selectedNews} /></Modal>
         </section>
     );
 };
