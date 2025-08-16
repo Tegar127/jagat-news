@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Tambahkan useEffect
 import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 
-// Data awal (bisa dikosongkan jika ingin memulai dari awal)
-const initialNewsData = [
-    { id: 1, title: 'Revolusi AI Generatif', category: 'Teknologi', author: 'Andi Wijaya', status: 'Published' },
-    { id: 2, title: 'Timnas Garuda Lolos', category: 'Olahraga', author: 'Budi Santoso', status: 'Published' },
-    { id: 3, title: 'Proyek Infrastruktur Baru', category: 'Ekonomi', author: 'Citra Lestari', status: 'Draft' },
-];
+const API_URL = 'http://localhost:5000/api'; // Definisikan URL base API
 
 const BeritaAdminPage = () => {
-    const [newsData, setNewsData] = useState(initialNewsData);
+    const [newsData, setNewsData] = useState([]); // Awalnya data kosong
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', author: '', status: 'Draft' });
+    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', author: '', status: 'DRAFT' });
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Fungsi untuk mengambil data dari server
+    const fetchNews = async () => {
+        const response = await fetch(`${API_URL}/berita`);
+        const data = await response.json();
+        // Format data agar sesuai dengan state frontend
+        const formattedData = data.map(news => ({
+            ...news,
+            author: news.author.name,
+            category: news.category.name,
+        }));
+        setNewsData(formattedData);
+    };
+
+    // useEffect akan berjalan sekali saat komponen pertama kali dimuat
+    useEffect(() => {
+        fetchNews();
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -20,7 +33,7 @@ const BeritaAdminPage = () => {
     };
 
     const handleAddNew = () => {
-        setCurrentNews({ id: null, title: '', category: '', author: '', status: 'Draft' });
+        setCurrentNews({ id: null, title: '', category: '', author: '', status: 'DRAFT' });
         setIsFormVisible(true);
     };
 
@@ -29,23 +42,26 @@ const BeritaAdminPage = () => {
         setIsFormVisible(true);
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
-            setNewsData(newsData.filter(news => news.id !== id));
-        }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const method = currentNews.id ? 'PUT' : 'POST';
+        const url = currentNews.id ? `${API_URL}/berita/${currentNews.id}` : `${API_URL}/berita`;
+
+        await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentNews),
+        });
+
+        fetchNews(); // Ambil data terbaru setelah submit
+        setIsFormVisible(false);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (currentNews.id) {
-            // Update berita
-            setNewsData(newsData.map(news => (news.id === currentNews.id ? currentNews : news)));
-        } else {
-            // Tambah berita baru
-            const newNews = { ...currentNews, id: Date.now() }; // Gunakan timestamp sebagai ID unik
-            setNewsData([...newsData, newNews]);
+    const handleDelete = async (id) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
+            await fetch(`${API_URL}/berita/${id}`, { method: 'DELETE' });
+            fetchNews(); // Ambil data terbaru setelah hapus
         }
-        setIsFormVisible(false);
     };
     
     const filteredNews = newsData.filter(news => 

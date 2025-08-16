@@ -1,4 +1,4 @@
-// File: backend/server.js
+// File: backend/server.js (Versi diperbarui)
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -6,11 +6,17 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware (Fungsi perantara)
-app.use(cors()); // Mengizinkan akses dari domain lain (frontend React Anda)
-app.use(express.json()); // Membaca data JSON yang dikirim dari frontend
+app.use(cors());
+app.use(express.json());
 
-// Halaman Awal API
+// Import Routes
+const beritaRoutes = require('./routes/berita');
+const kategoriRoutes = require('./routes/kategori');
+
+// Gunakan Routes dengan prefix
+app.use('/api/berita', beritaRoutes);
+app.use('/api/kategori', kategoriRoutes);
+
 app.get('/', (req, res) => {
     res.send('Selamat datang di Jagat News API!');
 });
