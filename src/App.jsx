@@ -1,7 +1,7 @@
 // File: src/App.jsx (Modifikasi)
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 
 // Import Halaman Publik
 import Navbar from './components/Navbar';
@@ -14,11 +14,22 @@ import { LoginPage, DaftarPage } from './pages/LoginPage';
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
-import DashboardPage from './src/Admin/DashboardPage';
-import BeritaAdminPage from './src/Admin/BeritaAdminPage';
-// Tambahkan import untuk KategoriAdminPage dan UserAdminPage jika sudah dibuat
-// import KategoriAdminPage from './pages/Admin/KategoriAdminPage';
-// import UserAdminPage from './pages/Admin/UserAdminPage';
+import DashboardPage from './components/Admin/DashboardPage';
+import BeritaAdminPage from './components/Admin/BeritaAdminPage';
+
+// Komponen placeholder untuk halaman admin yang belum dibuat
+const KategoriAdminPage = () => (
+    <div className="container mx-auto p-8 text-center">
+        <h1 className="text-3xl font-bold">Halaman Kelola Kategori</h1>
+        <p className="mt-4">Fitur ini sedang dalam pengembangan.</p>
+    </div>
+);
+const UserAdminPage = () => (
+    <div className="container mx-auto p-8 text-center">
+        <h1 className="text-3xl font-bold">Halaman Kelola Pengguna</h1>
+        <p className="mt-4">Fitur ini sedang dalam pengembangan.</p>
+    </div>
+);
 
 const KontakPage = () => (
     <div className="container mx-auto p-8 text-center">
@@ -38,8 +49,8 @@ const AppContent = () => {
                 <Routes>
                     <Route path="/admin/dashboard" element={<DashboardPage />} />
                     <Route path="/admin/berita" element={<BeritaAdminPage />} />
-                    {/* <Route path="/admin/kategori" element={<KategoriAdminPage />} /> */}
-                    {/* <Route path="/admin/users" element={<UserAdminPage />} /> */}
+                    <Route path="/admin/kategori" element={<KategoriAdminPage />} />
+                    <Route path="/admin/users" element={<UserAdminPage />} />
                 </Routes>
             </AdminLayout>
         );
