@@ -24,7 +24,7 @@ const HomeIcon = ({ className }) => (
 const SideIllustration = () => (
     <div className="hidden lg:flex flex-col items-center justify-center w-1/2 bg-blue-50 p-12 text-center rounded-l-2xl">
         <div className="w-64 h-64 mb-6"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path fill="#007BFF" d="M48.4,-64.3C61.8,-53.3,71.2,-37.6,76.5,-20.5C81.8,-3.4,83.1,15.1,75.9,29.9C68.7,44.7,53,55.8,37.1,64.2C21.1,72.6,4.9,78.2,-11.3,77.5C-27.5,76.8,-43.8,70,-56.3,58.8C-68.8,47.6,-77.6,32.1,-79.8,15.7C-82,-0.6,-77.6,-17.8,-68.8,-32.5C-60,-47.2,-46.8,-59.4,-32.7,-67.6C-18.6,-75.8,-3.6,-80,11.8,-76.8C27.2,-73.6,42.6,-64.3,48.4,-64.3Z" transform="translate(100 100)" /></svg></div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Portal RDI</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Jagat News</h2>
         <p className="text-gray-600">Your Gateway to Research and Development Innovation.</p>
     </div>
 );
