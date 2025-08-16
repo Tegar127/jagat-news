@@ -1,10 +1,11 @@
-// File: src/components/Admin/Sidebar.jsx
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext'; // Import hook useAuth
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
+    const { logout } = useAuth(); // Ambil fungsi logout dari context
+
     const navLinks = [
         { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard" },
         { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita" },
@@ -46,10 +47,14 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                         {navLinks.map(link => <NavItem key={link.to} {...link} />)}
                     </div>
                     <div>
-                        <a href="/" className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg">
+                        {/* Mengubah 'a' href menjadi 'button' dengan onClick */}
+                        <button 
+                            onClick={logout} 
+                            className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg"
+                        >
                             <LogOut size={20} />
                             <span className="ml-3 font-medium">Keluar</span>
-                        </a>
+                        </button>
                     </div>
                 </nav>
             </aside>

@@ -2,6 +2,9 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext'; // Import AuthProvider
+import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+
 
 // Import Halaman Publik
 import Navbar from './components/Navbar';
@@ -34,17 +37,18 @@ const AppContent = () => {
 
     if (isAdminRoute) {
         return (
-            <AdminLayout>
-                <Routes>
-                    <Route path="/admin/dashboard" element={<DashboardPage />} />
-                    <Route path="/admin/berita" element={<BeritaAdminPage />} />
-                    <Route path="/admin/kategori" element={<KategoriAdminPage />} />
-                    <Route path="/admin/users" element={<UserAdminPage />} />
-                </Routes>
-            </AdminLayout>
+            <ProtectedRoute>
+                <AdminLayout>
+                    <Routes>
+                        <Route path="/admin/dashboard" element={<DashboardPage />} />
+                        <Route path="/admin/berita" element={<BeritaAdminPage />} />
+                        <Route path="/admin/kategori" element={<KategoriAdminPage />} />
+                        <Route path="/admin/users" element={<UserAdminPage />} />
+                    </Routes>
+                </AdminLayout>
+            </ProtectedRoute>
         );
     }
-    
     const noNavFooterRoutes = ['/login', '/daftar'];
     const shouldShowNavAndFooter = !noNavFooterRoutes.includes(location.pathname);
 
@@ -77,7 +81,9 @@ const AppContent = () => {
 export default function App() {
     return (
         <Router>
-            <AppContent />
+            <AuthProvider>
+                <AppContent />
+            </AuthProvider>
         </Router>
     );
 }

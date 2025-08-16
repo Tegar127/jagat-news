@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 import portalLogo from '../assets/captcha.png'; 
 
 // --- Shared Helper Components ---
@@ -54,12 +55,39 @@ const DummyRecaptcha = ({ onVerify }) => {
 // --- Form Components (Now using useNavigate hook) ---
 const SignInForm = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const { login } = useAuth(); // Ambil fungsi login dari context
+    const [email, setEmail] = useState('admin@jagat.news'); // pre-fill untuk kemudahan testing
+    const [password, setPassword] = useState('password123'); // pre-fill untuk kemudahan testing
     const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
     const [error, setError] = useState('');
-    const handleLogin = (e) => { e.preventDefault(); if (!email || !password) { setError('Please enter both email and password.'); return; } if (!isCaptchaVerified) { setError('Please confirm you are not a robot.'); return; } setError(''); console.log('Login attempt with:', { email, password }); alert('Login Successful! (Dummy)'); };
+    const [loading, setLoading] = useState(false);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        if (!email || !password) {
+            setError('Silakan masukkan email dan password.');
+            return;
+        }
+        if (!isCaptchaVerified) {
+            setError('Mohon konfirmasi Anda bukan robot.');
+            return;
+        }
+        
+        setError('');
+        setLoading(true);
+
+        try {
+            await login(email, password);
+            // Navigasi sudah di-handle di dalam AuthContext
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
     const handleGoogleLogin = () => { console.log('Attempting Google Login...'); alert('Redirecting to Google for login... (Dummy)'); };
+    
     return (
         <div className="w-full lg:w-1/2 p-8 md:p-12">
             <div className="w-full max-w-md mx-auto">
@@ -76,16 +104,25 @@ const SignInForm = () => {
                 <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition duration-300 mb-6 text-gray-700 font-medium"><GoogleIcon /> Log in with Google</button>
                 <div className="flex items-center my-4"><hr className="flex-grow border-t border-gray-300" /><span className="mx-4 text-gray-500 text-sm">or</span><hr className="flex-grow border-t border-gray-300" /></div>
                 <form onSubmit={handleLogin}>
-                    {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-                    <div className="mb-4"><label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label><input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@domain.com" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/></div>
-                    <div className="mb-4"><label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label><input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/></div>
+                    {error && <p className="text-red-500 text-sm mb-4 bg-red-100 p-3 rounded-lg">{error}</p>}
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
+                        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@domain.com" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
+                        <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    </div>
                     <div className="mb-6"><DummyRecaptcha onVerify={setIsCaptchaVerified} /></div>
-                    <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Log In</button>
+                    <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300">
+                        {loading ? 'Logging in...' : 'Log In'}
+                    </button>
                 </form>
             </div>
         </div>
     );
 };
+
 const SignUpForm = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
