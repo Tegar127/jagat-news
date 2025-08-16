@@ -1,9 +1,7 @@
 import React from 'react';
 import { Menu, Bell, UserCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 const Header = ({ setSidebarOpen }) => {
-    const { user } = useAuth(); // Dapatkan data user
 
     return (
         <header className="flex items-center justify-between p-4 bg-white border-b shadow-sm sticky top-0 z-10">

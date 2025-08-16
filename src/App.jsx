@@ -2,9 +2,6 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext'; // Import AuthProvider
-import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
-
 
 // Import Halaman Publik
 import Navbar from './components/Navbar';

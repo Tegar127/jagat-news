@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext'; // Import hook useAuth
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
     const { logout } = useAuth(); // Ambil fungsi logout dari context
