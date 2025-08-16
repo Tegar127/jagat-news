@@ -1,0 +1,45 @@
+// File: backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(USER)
+  posts     Post[]
+}
+
+model Post {
+  id          Int       @id @default(autoincrement())
+  title       String
+  status      Status    @default(DRAFT)
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    Int
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
+}
+
+enum Role {
+  USER
+  ADMINISTRATOR
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+}
