@@ -1,7 +1,8 @@
 // File: src/App.jsx
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
+// Pastikan 'Outlet' dan 'Navigate' diimpor dari react-router-dom
+import { BrowserRouter as Router, Routes, Route, Link, Outlet, Navigate } from 'react-router-dom';
 
 // Import Halaman Publik
 import Navbar from './components/Navbar';
@@ -20,7 +21,7 @@ import KategoriAdminPage from './components/Admin/KategoriAdminPage';
 import UserAdminPage from './components/Admin/UserAdminPage';
 
 // Impor dari Context dan Protected Route
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Komponen placeholder untuk halaman yang belum dibuat
@@ -32,51 +33,60 @@ const KontakPage = () => (
     </div>
 );
 
+// Layout untuk halaman publik (yang memiliki Navbar dan Footer)
+const PublicLayout = () => (
+    <div className="bg-white font-sans antialiased flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow">
+            <Outlet /> {/* Rute anak seperti HomePage, AboutPage, dll. akan dirender di sini */}
+        </main>
+        <Footer />
+    </div>
+);
+
+
 const AppContent = () => {
-    const location = useLocation();
-    const isAdminRoute = location.pathname.startsWith('/admin');
-
-    if (isAdminRoute) {
-        return (
-            <ProtectedRoute>
-                <AdminLayout>
-                    <Routes>
-                        <Route path="/admin/dashboard" element={<DashboardPage />} />
-                        <Route path="/admin/berita" element={<BeritaAdminPage />} />
-                        <Route path="/admin/kategori" element={<KategoriAdminPage />} />
-                        <Route path="/admin/users" element={<UserAdminPage />} />
-                    </Routes>
-                </AdminLayout>
-            </ProtectedRoute>
-        );
-    }
-    
-    const noNavFooterRoutes = ['/login', '/daftar'];
-    const shouldShowNavAndFooter = !noNavFooterRoutes.includes(location.pathname);
-
     return (
-        <div className="bg-white font-sans antialiased flex flex-col min-h-screen">
-            {shouldShowNavAndFooter && <Navbar />}
-            <main className="flex-grow">
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/berita" element={<BeritaPage />} />
-                    <Route path="/berita/:id" element={<BeritaDetailPage />} />
-                    <Route path="/kontak" element={<KontakPage />} />
-                    <Route path="/tentang" element={<AboutPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/daftar" element={<DaftarPage />} />
-                    <Route path="*" element={
-                        <div className="text-center py-20">
-                            <h1 className="text-4xl font-bold">404</h1>
-                            <p className="mt-2 text-lg">Halaman Tidak Ditemukan</p>
-                            <Link to="/" className="text-blue-500 hover:underline mt-6 inline-block">Kembali ke Beranda</Link>
-                        </div>
-                    } />
-                </Routes>
-            </main>
-            {shouldShowNavAndFooter && <Footer />}
-        </div>
+        <Routes>
+            {/* Rute publik yang menggunakan PublicLayout */}
+            <Route element={<PublicLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/berita" element={<BeritaPage />} />
+                <Route path="/berita/:id" element={<BeritaDetailPage />} />
+                <Route path="/kontak" element={<KontakPage />} />
+                <Route path="/tentang" element={<AboutPage />} />
+            </Route>
+
+            {/* Rute yang tidak menggunakan layout (Login & Daftar) */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/daftar" element={<DaftarPage />} />
+
+            {/* Rute admin yang dilindungi dan menggunakan AdminLayout */}
+            <Route 
+                path="/admin" 
+                element={
+                    <ProtectedRoute>
+                        <AdminLayout />
+                    </ProtectedRoute>
+                }
+            >
+                {/* Rute anak dari /admin. Ini yang akan dirender oleh <Outlet/> */}
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="berita" element={<BeritaAdminPage />} />
+                <Route path="kategori" element={<KategoriAdminPage />} />
+                <Route path="users" element={<UserAdminPage />} />
+            </Route>
+            
+            {/* Rute untuk halaman tidak ditemukan (404) */}
+            <Route path="*" element={
+                <div className="text-center py-20">
+                    <h1 className="text-4xl font-bold">404</h1>
+                    <p className="mt-2 text-lg">Halaman Tidak Ditemukan</p>
+                    <Link to="/" className="text-blue-500 hover:underline mt-6 inline-block">Kembali ke Beranda</Link>
+                </div>
+            } />
+        </Routes>
     );
 };
 
