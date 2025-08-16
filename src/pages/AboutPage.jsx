@@ -3,54 +3,45 @@ import { Lightbulb, Users, Handshake, ShieldCheck, TrendingUp, Sparkles, Target,
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-// Data Mock untuk bagian About Us (Diperkaya)
 const aboutContent = {
     hero: {
-        tagline: "Meningkatkan Inovasi Riset di Indonesia",
-        title: "Platform Terdepan untuk Kolaborasi dan Publikasi Ilmiah.",
-        description: "Kami hadir untuk mendefinisikan ulang cara penelitian dilakukan di Indonesia, dengan menghubungkan pikiran-pikiran cerdas dan memfasilitasi penemuan-penemuan transformatif.",
-        buttonText: "Mulai Jelajahi",
-        buttonLink: "/login"
+        tagline: "Menyajikan Berita Terkini dan Terpercaya",
+        title: "Platform Berita Terdepan di Indonesia.",
+        description: "Kami hadir untuk memberikan Anda informasi terbaru, akurat, dan mendalam dari berbagai penjuru dunia, langsung ke genggaman Anda.",
+        buttonText: "Mulai Membaca",
+        buttonLink: "/berita"
     },
     ourStory: {
         heading: "Siapa Kami",
-        title: "Kisah di Balik Portal RDI: Membangun Jembatan Pengetahuan.",
+        title: "Kisah di Balik Jagat News: Membangun Jembatan Informasi.",
         paragraphs: [
-            "Portal Riset dan Pengembangan Inovasi (RDI) lahir dari visi untuk mengatasi fragmentasi informasi dan sumber daya di ekosistem riset Indonesia. Kami memahami tantangan yang dihadapi peneliti dalam menemukan data, kolaborator, dan pendanaan yang relevan.",
-            "Dengan memanfaatkan teknologi terkini, kami menciptakan platform terintegrasi yang tidak hanya mempermudah akses ke jurnal-jurnal terkemuka dan data penelitian, tetapi juga mendorong interaksi aktif antar para ahli. Kami percaya bahwa kolaborasi adalah kunci untuk mempercepat kemajuan ilmiah dan inovasi yang berdampak positif bagi masyarakat.",
-            "Sejak didirikan, kami terus berinovasi untuk menjadi katalis utama dalam transformasi lanskap riset nasional. Kami berdedikasi untuk mendukung setiap langkah perjalanan riset Anda, dari ide awal hingga publikasi dan implementasi."
+            "Jagat News lahir dari visi untuk menyajikan berita yang tidak hanya cepat, tetapi juga akurat dan berimbang. Kami memahami kebutuhan masyarakat akan informasi yang dapat dipercaya di tengah derasnya arus informasi.",
+            "Dengan memanfaatkan teknologi terkini, kami menciptakan platform berita yang terintegrasi, menyajikan berita dari berbagai kategori, mulai dari politik, ekonomi, olahraga, hingga teknologi.",
+            "Sejak didirikan, kami terus berinovasi untuk menjadi sumber informasi utama bagi masyarakat Indonesia. Kami berdedikasi untuk menyajikan berita yang mendidik, mencerahkan, dan memberdayakan."
         ],
-        imageUrl: "https://placehold.co/800x500/60A5FA/FFFFFF?text=Our+Story+Image", // Ganti dengan gambar ilustrasi relevan
+        imageUrl: "https://placehold.co/800x500/60A5FA/FFFFFF?text=Jagat+News+Story",
     },
-    keyFigures: [ // Opsional: Contoh data angka kunci
-        { value: "5.000+", label: "Jurnal Terindeks" },
-        { value: "1.200+", label: "Peneliti Terdaftar" },
-        { value: "250+", label: "Kolaborasi Aktif" },
-        { value: "100%", label: "Dukungan Penuh" },
-    ],
     values: [
-        { icon: <Target className="w-8 h-8 text-blue-600" />, title: "Fokus pada Dampak", description: "Setiap inisiatif kami bertujuan untuk menciptakan dampak nyata bagi kemajuan riset dan masyarakat." },
-        { icon: <Eye className="w-8 h-8 text-teal-600" />, title: "Transparansi & Aksesibilitas", description: "Kami menjamin kemudahan akses informasi dan proses yang terbuka bagi semua pengguna." },
-        { icon: <Gem className="w-8 h-8 text-yellow-600" />, title: "Integritas Ilmiah", description: "Menjunjung tinggi standar etika dan kualitas tertinggi dalam setiap data dan publikasi." },
-        { icon: <Award className="w-8 h-8 text-green-600" />, title: "Keunggulan Berkelanjutan", description: "Terus berinovasi dan meningkatkan layanan untuk menjadi yang terdepan." },
-        { icon: <Puzzle className="w-8 h-8 text-indigo-600" />, title: "Sinergi Kolaboratif", description: "Mendorong kerja sama lintas disiplin untuk penemuan yang lebih besar." },
-        { icon: <Briefcase className="w-8 h-8 text-red-600" />, title: "Profesionalisme", description: "Menyediakan layanan dengan standar profesionalisme dan dedikasi tinggi." },
+        { icon: <Target className="w-8 h-8 text-blue-600" />, title: "Akurat & Terpercaya", description: "Setiap berita yang kami sajikan telah melalui proses verifikasi yang ketat untuk memastikan akurasinya." },
+        { icon: <Eye className="w-8 h-8 text-teal-600" />, title: "Berimbang & Objektif", description: "Kami menyajikan berita dari berbagai sudut pandang untuk memberikan gambaran yang utuh dan objektif." },
+        { icon: <Gem className="w-8 h-8 text-yellow-600" />, title: "Integritas Jurnalistik", description: "Menjunjung tinggi standar etika dan kualitas tertinggi dalam setiap liputan." },
+        { icon: <Award className="w-8 h-8 text-green-600" />, title: "Cepat & Terkini", description: "Menyajikan informasi terbaru secepat mungkin tanpa mengorbankan akurasi." },
+        { icon: <Briefcase className="w-8 h-8 text-red-600" />, title: "Profesionalisme", description: "Menyediakan berita dengan standar profesionalisme dan dedikasi tinggi." },
     ],
     team: [
         { id: 1, name: "Dr. Citra Lestari", title: "Chief Executive Officer", imageUrl: "https://placehold.co/300x300/6366F1/FFFFFF?text=Citra" },
         { id: 2, name: "Prof. Ananta Wijaya", title: "Chief Technology Officer", imageUrl: "https://placehold.co/300x300/10B981/FFFFFF?text=Ananta" },
-        { id: 3, name: "Dr. Bayu Prakoso", title: "Head of Research & Development", imageUrl: "https://placehold.co/300x300/F59E0B/FFFFFF?text=Bayu" },
+        { id: 3, name: "Dr. Bayu Prakoso", title: "Head of Editorial", imageUrl: "https://placehold.co/300x300/F59E0B/FFFFFF?text=Bayu" },
         { id: 4, name: "Ms. Dina Rahmawati", title: "Community & Partnership Lead", imageUrl: "https://placehold.co/300x300/3B82F6/FFFFFF?text=Dina" },
     ],
     cta: {
-        title: "Siap Berkontribusi pada Masa Depan Riset?",
-        subtitle: "Bergabunglah dengan komunitas kami dan jadilah bagian dari perubahan besar dalam ekosistem riset Indonesia.",
+        title: "Siap Menjadi Lebih Terinformasi?",
+        subtitle: "Bergabunglah dengan jutaan pembaca kami dan dapatkan berita terbaru setiap hari.",
         buttonText: "Daftar Sekarang",
-        buttonLink: "/login"
+        buttonLink: "/daftar"
     }
 };
 
-// Komponen Reusable untuk Judul Section (optional, for consistency)
 const SectionHeader = ({ subTitle, title, aosDelay = 0 }) => (
     <div className="text-center mb-12">
         {subTitle && (
@@ -76,12 +67,11 @@ const SectionHeader = ({ subTitle, title, aosDelay = 0 }) => (
     </div>
 );
 
-// Komponen Card untuk Nilai
 const ValueCard = ({ value, index }) => (
     <div
         className="bg-white rounded-xl p-6 text-center flex flex-col items-center border border-gray-200/80 transform hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-md"
         data-aos="fade-up"
-        data-aos-delay={index * 120} // Staggered animation
+        data-aos-delay={index * 120}
         data-aos-duration="800"
         data-aos-once="true"
     >
@@ -93,12 +83,11 @@ const ValueCard = ({ value, index }) => (
     </div>
 );
 
-// Komponen Card untuk Anggota Tim
 const TeamMemberCard = ({ member, index }) => (
     <div
         className="bg-white rounded-xl shadow-md p-6 text-center border border-gray-200/80 transform hover:scale-105 transition-all duration-300 flex flex-col items-center"
         data-aos="fade-up"
-        data-aos-delay={index * 150} // Staggered animation
+        data-aos-delay={index * 150}
         data-aos-duration="800"
         data-aos-once="true"
     >
@@ -127,9 +116,8 @@ export default function AboutPage() {
 
     return (
         <div className="bg-gray-50 text-gray-800">
-            {/* Hero Section - Minimalist & Impactful */}
+            {/* Hero Section */}
             <section className="relative py-24 md:py-32 bg-gradient-to-br from-blue-600 to-blue-800 text-white overflow-hidden">
-                <div className="absolute inset-0 pattern-dots-md gray-800 opacity-20"></div> {/* Dot pattern similar to Inpart.io */}
                 <div className="container mx-auto px-4 text-center relative z-10 max-w-4xl">
                     <p
                         className="text-blue-200 text-lg md:text-xl font-semibold mb-3"
@@ -160,11 +148,11 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Our Story Section - Two Columns (Text + Image) */}
+            {/* Our Story Section */}
             <section className="py-16 bg-white">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                        <div className="order-2 lg:order-1">
+                        <div>
                             <p
                                 className="text-blue-600 text-sm font-semibold uppercase mb-2"
                                 data-aos="fade-right" data-aos-duration="700" data-aos-once="true"
@@ -187,7 +175,7 @@ export default function AboutPage() {
                                 </p>
                             ))}
                         </div>
-                        <div className="order-1 lg:order-2">
+                        <div>
                             <img
                                 src={aboutContent.ourStory.imageUrl}
                                 alt="Our Story"
@@ -199,36 +187,10 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Key Figures Section (Optional - if you have stats) */}
-            {aboutContent.keyFigures && aboutContent.keyFigures.length > 0 && (
-                <section className="py-16 bg-blue-100/30">
-                    <div className="container mx-auto px-4 max-w-6xl">
-                        <h2
-                            className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12"
-                            data-aos="fade-down" data-aos-duration="800" data-aos-once="true"
-                        >
-                            Pencapaian Kami
-                        </h2>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                            {aboutContent.keyFigures.map((figure, index) => (
-                                <div
-                                    key={index}
-                                    className="text-center p-6 bg-white rounded-xl shadow-md border border-gray-200/80"
-                                    data-aos="zoom-in" data-aos-duration="700" data-aos-delay={index * 100} data-aos-once="true"
-                                >
-                                    <p className="text-4xl md:text-5xl font-extrabold text-blue-700 mb-2">{figure.value}</p>
-                                    <p className="text-lg text-gray-600">{figure.label}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* Values Section - Grid of Cards */}
+            {/* Values Section */}
             <section className="py-16 bg-gray-50">
                 <div className="container mx-auto px-4 max-w-6xl">
-                    <SectionHeader subTitle="Pilar Utama" title="Nilai-Nilai Inti Kami" aosDelay={0} />
+                    <SectionHeader subTitle="Prinsip Kami" title="Nilai-Nilai Inti Kami" />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {aboutContent.values.map((value, index) => (
                             <ValueCard key={value.title} value={value} index={index} />
@@ -237,21 +199,19 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Team Section - Grid of Circular Images */}
-            {aboutContent.team && aboutContent.team.length > 0 && (
-                <section className="py-16 bg-white">
-                    <div className="container mx-auto px-4 max-w-6xl">
-                        <SectionHeader subTitle="Orang-Orang di Balik Layar" title="Temui Tim Kami" aosDelay={0} />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {aboutContent.team.map((member, index) => (
-                                <TeamMemberCard key={member.id} member={member} index={index} />
-                            ))}
-                        </div>
+            {/* Team Section */}
+            <section className="py-16 bg-white">
+                <div className="container mx-auto px-4 max-w-6xl">
+                    <SectionHeader subTitle="Orang-Orang di Balik Layar" title="Temui Tim Kami" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {aboutContent.team.map((member, index) => (
+                            <TeamMemberCard key={member.id} member={member} index={index} />
+                        ))}
                     </div>
-                </section>
-            )}
+                </div>
+            </section>
 
-            {/* Call to Action Section - Solid Background */}
+            {/* Call to Action Section */}
             <section className="py-20 bg-blue-700 text-white text-center">
                 <div className="container mx-auto px-4 max-w-3xl">
                     <h2
