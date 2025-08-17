@@ -9,8 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ... (Model User, Post, Category tetap sama) ...
-
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -24,9 +22,9 @@ model Post {
   id          Int       @id @default(autoincrement())
   title       String
   content     String?
-  imageUrl    String?
+  images      Image[] // Hapus imageUrl dan ganti dengan relasi ke Image
   canBeCopied Boolean   @default(true)
-  viewCount   Int       @default(0) // Tambahkan baris ini
+  viewCount   Int       @default(0)
   status      Status    @default(DRAFT)
   publishedAt DateTime  @default(now())
   author      User      @relation(fields: [authorId], references: [id])
@@ -35,13 +33,20 @@ model Post {
   categoryId  Int?
 }
 
+// Model baru untuk menyimpan gambar
+model Image {
+  id     Int    @id @default(autoincrement())
+  url    String
+  post   Post   @relation(fields: [postId], references: [id])
+  postId Int
+}
+
 model Category {
   id    Int    @id @default(autoincrement())
   name  String @unique
   posts Post[]
 }
 
-// TAMBAHKAN MODEL BARU DI SINI
 model Promo {
   id          Int     @id @default(autoincrement())
   title       String

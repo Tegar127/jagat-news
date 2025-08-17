@@ -23,13 +23,18 @@ const storage = multer.diskStorage({
     }
 });
 
+// Izinkan unggahan banyak file, dengan nama field 'imageFiles' dan maksimal 10 file
 const upload = multer({ storage: storage });
 
-// GET all news
+// GET semua berita, sertakan relasi gambar
 router.get('/', async (req, res) => {
     try {
         const posts = await prisma.post.findMany({
-            include: { author: true, category: true },
+            include: { 
+                author: true, 
+                category: true, 
+                images: true // Sertakan gambar
+            },
             orderBy: { publishedAt: 'desc' }
         });
         res.json(posts);
@@ -38,13 +43,13 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET latest news
+// GET berita terbaru
 router.get('/latest', async (req, res) => {
     try {
         const latestPosts = await prisma.post.findMany({
             take: 5,
             orderBy: { publishedAt: 'desc' },
-            include: { category: true },
+            include: { category: true, images: true }, // Sertakan gambar
         });
         res.json(latestPosts);
     } catch (error) {
@@ -52,13 +57,13 @@ router.get('/latest', async (req, res) => {
     }
 });
 
-// GET popular news
+// GET berita populer
 router.get('/popular', async (req, res) => {
     try {
         const popularPosts = await prisma.post.findMany({
             take: 5,
             orderBy: { viewCount: 'desc' },
-            include: { category: true },
+            include: { category: true, images: true }, // Sertakan gambar
         });
         res.json(popularPosts);
     } catch (error) {
@@ -66,7 +71,7 @@ router.get('/popular', async (req, res) => {
     }
 });
 
-// GET a single news by ID (dan increment view count)
+// GET satu berita berdasarkan ID (dan tingkatkan jumlah tampilan)
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -74,7 +79,7 @@ router.get('/:id', async (req, res) => {
         const [post, _] = await prisma.$transaction([
             prisma.post.findUnique({
                 where: { id: parseInt(id) },
-                include: { author: true, category: true },
+                include: { author: true, category: true, images: true }, // Sertakan gambar
             }),
             prisma.post.update({
                 where: { id: parseInt(id) },
@@ -92,14 +97,9 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST: Create new news with image upload
-router.post('/', upload.single('imageFile'), async (req, res) => {
-    const { title, status, category: categoryName, content, imageUrl, canBeCopied } = req.body;
-    let finalImageUrl = imageUrl;
-
-    if (req.file) {
-        finalImageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-    }
+// POST: Buat berita baru dengan unggahan banyak gambar
+router.post('/', upload.array('imageFiles', 10), async (req, res) => {
+    const { title, status, category: categoryName, content, canBeCopied } = req.body;
 
     try {
         const author = await prisma.user.findFirst();
@@ -117,12 +117,18 @@ router.post('/', upload.single('imageFile'), async (req, res) => {
             data: {
                 title,
                 content,
-                imageUrl: finalImageUrl,
                 canBeCopied: canBeCopied === 'true',
                 status: status.toUpperCase(),
                 authorId: author.id,
                 categoryId: category.id,
+                // Buat entri gambar untuk setiap file yang diunggah
+                images: {
+                    create: req.files.map(file => ({
+                        url: `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+                    }))
+                }
             },
+            include: { images: true }
         });
         res.status(201).json(newPost);
     } catch (error) {
@@ -131,17 +137,10 @@ router.post('/', upload.single('imageFile'), async (req, res) => {
     }
 });
 
-// PUT: Update news with image upload
-router.put('/:id', upload.single('imageFile'), async (req, res) => {
+// PUT: Perbarui berita dengan unggahan gambar baru
+router.put('/:id', upload.array('imageFiles', 10), async (req, res) => {
     const { id } = req.params;
-    const { title, status, category: categoryName, content, imageUrl, canBeCopied } = req.body;
-    let finalImageUrl;
-
-    if (req.file) {
-        finalImageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-    } else {
-        finalImageUrl = imageUrl;
-    }
+    const { title, status, category: categoryName, content, canBeCopied } = req.body;
     
     try {
         const category = await prisma.category.upsert({
@@ -149,29 +148,54 @@ router.put('/:id', upload.single('imageFile'), async (req, res) => {
             update: {},
             create: { name: categoryName },
         });
+        
+        const dataToUpdate = {
+            title,
+            content,
+            canBeCopied: canBeCopied === 'true',
+            status: status.toUpperCase(),
+            categoryId: category.id,
+        };
+        
+        // Jika ada file baru yang diunggah, tambahkan ke post yang ada
+        if (req.files && req.files.length > 0) {
+            dataToUpdate.images = {
+                create: req.files.map(file => ({
+                    url: `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
+                }))
+            };
+        }
+
+        // Catatan: Logika ini tidak menghapus gambar lama.
+        // Untuk menghapus, Anda perlu mengirim ID gambar yang akan dihapus dari frontend
+        // dan menjalankan `prisma.image.deleteMany(...)` di sini.
 
         const updatedPost = await prisma.post.update({
             where: { id: parseInt(id) },
-            data: {
-                title,
-                content,
-                imageUrl: finalImageUrl,
-                canBeCopied: canBeCopied === 'true',
-                status: status.toUpperCase(),
-                categoryId: category.id,
-            },
+            data: dataToUpdate,
+            include: { images: true }
         });
+
         res.json(updatedPost);
     } catch (error) {
         res.status(500).json({ error: "Gagal mengupdate berita: " + error.message });
     }
 });
 
-// DELETE: Delete news
+// DELETE: Hapus berita
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        await prisma.post.delete({ where: { id: parseInt(id) } });
+        // Hapus semua gambar yang terkait terlebih dahulu untuk menghindari error constraint
+        await prisma.image.deleteMany({
+            where: { postId: parseInt(id) }
+        });
+        
+        // Kemudian hapus post itu sendiri
+        await prisma.post.delete({ 
+            where: { id: parseInt(id) } 
+        });
+
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: "Gagal menghapus berita: " + error.message });
