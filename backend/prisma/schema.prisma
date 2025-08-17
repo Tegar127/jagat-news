@@ -25,6 +25,7 @@ model Post {
   title       String
   content     String?
   imageUrl    String?
+  canBeCopied Boolean   @default(true)
   status      Status    @default(DRAFT)
   publishedAt DateTime  @default(now())
   author      User      @relation(fields: [authorId], references: [id])

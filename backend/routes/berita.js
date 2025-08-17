@@ -1,3 +1,4 @@
+// backend/routes/berita.js
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
@@ -58,7 +59,7 @@ router.get('/:id', async (req, res) => {
 
 // POST: Create new news with image upload
 router.post('/', upload.single('imageFile'), async (req, res) => {
-    const { title, status, category: categoryName, content, imageUrl } = req.body;
+    const { title, status, category: categoryName, content, imageUrl, canBeCopied } = req.body;
     let finalImageUrl = imageUrl;
 
     if (req.file) {
@@ -82,6 +83,7 @@ router.post('/', upload.single('imageFile'), async (req, res) => {
                 title,
                 content,
                 imageUrl: finalImageUrl,
+                canBeCopied: canBeCopied === 'true',
                 status: status.toUpperCase(),
                 authorId: author.id,
                 categoryId: category.id,
@@ -97,7 +99,7 @@ router.post('/', upload.single('imageFile'), async (req, res) => {
 // PUT: Update news with image upload
 router.put('/:id', upload.single('imageFile'), async (req, res) => {
     const { id } = req.params;
-    const { title, status, category: categoryName, content, imageUrl } = req.body;
+    const { title, status, category: categoryName, content, imageUrl, canBeCopied } = req.body;
     let finalImageUrl;
 
     if (req.file) {
@@ -105,7 +107,7 @@ router.put('/:id', upload.single('imageFile'), async (req, res) => {
     } else {
         finalImageUrl = imageUrl;
     }
-    
+
     try {
         const category = await prisma.category.upsert({
             where: { name: categoryName },
@@ -119,6 +121,7 @@ router.put('/:id', upload.single('imageFile'), async (req, res) => {
                 title,
                 content,
                 imageUrl: finalImageUrl,
+                canBeCopied: canBeCopied === 'true',
                 status: status.toUpperCase(),
                 categoryId: category.id,
             },

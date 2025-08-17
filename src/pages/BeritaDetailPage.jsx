@@ -50,8 +50,10 @@ export default function BeritaDetailPage() {
         return <Navigate to="/404" replace />;
     }
 
+    const canCopyClass = news.canBeCopied ? '' : 'select-none';
+
     return (
-        <div className="bg-zinc-50 font-sans min-h-screen">
+        <div className={`bg-zinc-50 font-sans min-h-screen ${canCopyClass}`}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
                 <div className="mb-6">
                     <Link to="/berita" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold text-sm">
@@ -68,7 +70,7 @@ export default function BeritaDetailPage() {
                                 {news.category?.name || 'Tanpa Kategori'}
                             </span>
                             <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 tracking-tight">{news.title}</h1>
-                            
+
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-6 border-y border-zinc-200 py-4">
                                <InfoTag icon={<User className="w-4 h-4 text-zinc-500" />} text={news.author?.name || 'Admin'} />
                                <InfoTag icon={<Calendar className="w-4 h-4 text-zinc-500" />} text={new Date(news.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })} />

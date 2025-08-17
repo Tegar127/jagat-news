@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:5000/api';
 const BeritaAdminPage = () => {
     const [newsData, setNewsData] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', status: 'DRAFT', imageUrl: '', content: '' });
+    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', status: 'DRAFT', imageUrl: '', content: '', canBeCopied: true });
     const [imageFile, setImageFile] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -31,8 +31,8 @@ const BeritaAdminPage = () => {
     }, []);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentNews({ ...currentNews, [name]: value });
+        const { name, value, type, checked } = e.target;
+        setCurrentNews({ ...currentNews, [name]: type === 'checkbox' ? checked : value });
     };
 
     const handleFileChange = (e) => {
@@ -40,7 +40,7 @@ const BeritaAdminPage = () => {
     };
 
     const handleAddNew = () => {
-        setCurrentNews({ id: null, title: '', category: '', status: 'DRAFT', imageUrl: '', content: '' });
+        setCurrentNews({ id: null, title: '', category: '', status: 'DRAFT', imageUrl: '', content: '', canBeCopied: true });
         setImageFile(null);
         setIsFormVisible(true);
     };
@@ -53,13 +53,14 @@ const BeritaAdminPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData();
         formData.append('title', currentNews.title);
         formData.append('category', currentNews.category);
         formData.append('status', currentNews.status);
         formData.append('content', currentNews.content);
-        
+        formData.append('canBeCopied', currentNews.canBeCopied);
+
         if (imageFile) {
             formData.append('imageFile', imageFile);
         } else {
@@ -94,7 +95,7 @@ const BeritaAdminPage = () => {
             fetchNews();
         }
     };
-    
+
     const filteredNews = newsData.filter(news => 
         news.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -157,6 +158,12 @@ const BeritaAdminPage = () => {
                                 <option value="DRAFT">Draft</option>
                             </select>
                         </div>
+                        <div className="mb-4">
+                            <label className="flex items-center">
+                                <input type="checkbox" name="canBeCopied" checked={currentNews.canBeCopied} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+                                <span className="ml-2 text-gray-700">Izinkan teks berita disalin</span>
+                            </label>
+                        </div>
                         <div className="flex justify-end gap-4">
                             <button type="button" onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Batal</button>
                             <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">Simpan</button>
@@ -164,7 +171,7 @@ const BeritaAdminPage = () => {
                     </form>
                 </div>
             )}
-            
+
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200/80">
                 <div className="mb-4">
                      <div className="relative">
