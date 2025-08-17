@@ -1,6 +1,8 @@
-// File: backend/server.js (Versi diperbarui)
+// backend/server.js
+
 const express = require('express');
 const cors = require('cors');
+const path = require('path'); // Tambahkan ini
 require('dotenv').config();
 
 const app = express();
@@ -8,6 +10,10 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+// Tambahkan baris ini untuk menyajikan file statis dari folder 'public'
+// Gambar yang di-upload akan dapat diakses melalui URL seperti http://localhost:5000/uploads/namafile.jpg
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Import Routes
 const beritaRoutes = require('./routes/berita');

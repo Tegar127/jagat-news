@@ -1,21 +1,36 @@
-// backend/routes/berita.js
-
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Pastikan folder untuk upload ada
+const uploadDir = 'public/uploads/';
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Konfigurasi Multer untuk penyimpanan file
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir); // Simpan file di folder backend/public/uploads
+    },
+    filename: function (req, file, cb) {
+        // Buat nama file unik untuk menghindari tumpukan nama
+        cb(null, 'berita-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // GET all news
 router.get('/', async (req, res) => {
     try {
         const posts = await prisma.post.findMany({
-            include: {
-                author: true,
-                category: true,
-            },
-            orderBy: {
-                publishedAt: 'desc'
-            }
+            include: { author: true, category: true },
+            orderBy: { publishedAt: 'desc' }
         });
         res.json(posts);
     } catch (error) {
@@ -29,10 +44,7 @@ router.get('/:id', async (req, res) => {
     try {
         const post = await prisma.post.findUnique({
             where: { id: parseInt(id) },
-            include: {
-                author: true,
-                category: true,
-            },
+            include: { author: true, category: true },
         });
         if (post) {
             res.json(post);
@@ -44,50 +56,56 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST: Create new news (LOGIKA DIPERBAIKI)
-router.post('/', async (req, res) => {
-    // Nama field category di body request adalah 'category'
+// POST: Create new news with image upload
+router.post('/', upload.single('imageFile'), async (req, res) => {
     const { title, status, category: categoryName, content, imageUrl } = req.body;
+    let finalImageUrl = imageUrl;
+
+    if (req.file) {
+        finalImageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
 
     try {
-        // 1. Ambil penulis pertama sebagai default. Di aplikasi nyata, ini harus dari sesi login.
         const author = await prisma.user.findFirst();
         if (!author) {
-            return res.status(400).json({ error: "Tidak ada pengguna di sistem untuk dijadikan penulis." });
+            return res.status(400).json({ error: "Tidak ada pengguna di sistem." });
         }
 
-        // 2. Cari atau buat kategori berdasarkan nama.
         const category = await prisma.category.upsert({
             where: { name: categoryName },
-            update: {}, // Jangan update apa-apa jika sudah ada
-            create: { name: categoryName }, // Buat baru jika belum ada
+            update: {},
+            create: { name: categoryName },
         });
 
-        // 3. Buat post baru dengan authorId dan categoryId yang valid
         const newPost = await prisma.post.create({
             data: {
                 title,
                 content,
-                imageUrl,
+                imageUrl: finalImageUrl,
                 status: status.toUpperCase(),
-                authorId: author.id,      // Gunakan ID dari user yang ditemukan
-                categoryId: category.id,  // Gunakan ID dari kategori yang ditemukan/dibuat
+                authorId: author.id,
+                categoryId: category.id,
             },
         });
         res.status(201).json(newPost);
-
     } catch (error) {
-        console.error("Error saat membuat berita baru:", error);
+        console.error("Error saat membuat berita:", error);
         res.status(500).json({ error: "Gagal membuat berita baru: " + error.message });
     }
 });
 
-
-// PUT: Update news (LOGIKA DIPERBAIKI)
-router.put('/:id', async (req, res) => {
+// PUT: Update news with image upload
+router.put('/:id', upload.single('imageFile'), async (req, res) => {
     const { id } = req.params;
     const { title, status, category: categoryName, content, imageUrl } = req.body;
+    let finalImageUrl;
 
+    if (req.file) {
+        finalImageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    } else {
+        finalImageUrl = imageUrl;
+    }
+    
     try {
         const category = await prisma.category.upsert({
             where: { name: categoryName },
@@ -100,7 +118,7 @@ router.put('/:id', async (req, res) => {
             data: {
                 title,
                 content,
-                imageUrl,
+                imageUrl: finalImageUrl,
                 status: status.toUpperCase(),
                 categoryId: category.id,
             },
@@ -110,7 +128,6 @@ router.put('/:id', async (req, res) => {
         res.status(500).json({ error: "Gagal mengupdate berita: " + error.message });
     }
 });
-
 
 // DELETE: Delete news
 router.delete('/:id', async (req, res) => {
