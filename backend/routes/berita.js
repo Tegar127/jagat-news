@@ -1,3 +1,4 @@
+// tegar127/jagat-news/jagat-news-fe7d803b6f9c7356db28f446f52ea3d22477216b/backend/routes/berita.js
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
@@ -140,9 +141,19 @@ router.post('/', upload.array('imageFiles', 10), async (req, res) => {
 // PUT: Perbarui berita dengan unggahan gambar baru
 router.put('/:id', upload.array('imageFiles', 10), async (req, res) => {
     const { id } = req.params;
-    const { title, status, category: categoryName, content, canBeCopied } = req.body;
+    const { title, status, category: categoryName, content, canBeCopied, imagesToDelete } = req.body;
     
     try {
+        // Hapus gambar yang diminta untuk dihapus
+        if (imagesToDelete) {
+            const idsToDelete = JSON.parse(imagesToDelete).map(id => parseInt(id));
+            if (idsToDelete.length > 0) {
+                await prisma.image.deleteMany({
+                    where: { id: { in: idsToDelete } }
+                });
+            }
+        }
+
         const category = await prisma.category.upsert({
             where: { name: categoryName },
             update: {},
@@ -165,10 +176,6 @@ router.put('/:id', upload.array('imageFiles', 10), async (req, res) => {
                 }))
             };
         }
-
-        // Catatan: Logika ini tidak menghapus gambar lama.
-        // Untuk menghapus, Anda perlu mengirim ID gambar yang akan dihapus dari frontend
-        // dan menjalankan `prisma.image.deleteMany(...)` di sini.
 
         const updatedPost = await prisma.post.update({
             where: { id: parseInt(id) },

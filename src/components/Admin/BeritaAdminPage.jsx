@@ -1,3 +1,4 @@
+// tegar127/jagat-news/jagat-news-fe7d803b6f9c7356db28f446f52ea3d22477216b/src/components/Admin/BeritaAdminPage.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createEditor, Editor, Transforms, Text, Element as SlateElement } from 'slate';
 import { Slate, Editable, withReact, useSlate } from 'slate-react';
@@ -106,6 +107,7 @@ const BeritaAdminPage = () => {
         images: []
     });
     const [imageFiles, setImageFiles] = useState([]);
+    const [imagesToDelete, setImagesToDelete] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     const [editorValue, setEditorValue] = useState(initialValue);
@@ -213,6 +215,7 @@ const BeritaAdminPage = () => {
 
     const handleRemoveExistingImage = (imageId) => {
         if (window.confirm('Yakin ingin menghapus gambar ini?')) {
+            setImagesToDelete(prev => [...prev, imageId]);
             setCurrentNews(prev => ({ ...prev, images: prev.images.filter(img => img.id !== imageId) }));
         }
     };
@@ -221,6 +224,7 @@ const BeritaAdminPage = () => {
         setCurrentNews({ id: null, title: '', category: '', status: 'DRAFT', content: '', canBeCopied: true, images: [] });
         setEditorValue(initialValue);
         setImageFiles([]);
+        setImagesToDelete([]);
         setIsFormVisible(true);
     };
 
@@ -228,6 +232,7 @@ const BeritaAdminPage = () => {
         setCurrentNews(news);
         setEditorValue(deserialize(news.content || ''));
         setImageFiles([]);
+        setImagesToDelete([]);
         setIsFormVisible(true);
     };
 
@@ -241,6 +246,7 @@ const BeritaAdminPage = () => {
         formData.append('content', content);
         formData.append('canBeCopied', String(currentNews.canBeCopied));
         if (imageFiles.length > 0) imageFiles.forEach(file => formData.append('imageFiles', file));
+        if (imagesToDelete.length > 0) formData.append('imagesToDelete', JSON.stringify(imagesToDelete));
         if (!currentNews.id && imageFiles.length === 0) return alert("Unggah setidaknya satu gambar.");
 
         const method = currentNews.id ? 'PUT' : 'POST';
