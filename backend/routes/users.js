@@ -41,11 +41,19 @@ router.post('/', async (req, res) => {
 // PUT update a user
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, email, role } = req.body;
+    const { name, email, role, password: newPassword } = req.body;
+
     try {
+        const dataToUpdate = { name, email, role };
+
+        // Jika ada password baru yang dikirim, hash password tersebut sebelum disimpan
+        if (newPassword) {
+            dataToUpdate.password = await bcrypt.hash(newPassword, 10);
+        }
+
         const updatedUser = await prisma.user.update({
             where: { id: parseInt(id) },
-            data: { name, email, role }
+            data: dataToUpdate,
         });
         const { password, ...userWithoutPassword } = updatedUser;
         res.json(userWithoutPassword);
