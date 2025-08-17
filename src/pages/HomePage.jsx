@@ -7,7 +7,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SidebarNews from '../components/SidebarNews';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 
 // Data statis untuk kategori
 const categories = [

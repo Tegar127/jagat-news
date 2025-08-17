@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { User, Calendar, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 
 const InfoTag = ({ icon, text }) => (
     <div className="flex items-center text-sm text-zinc-600">

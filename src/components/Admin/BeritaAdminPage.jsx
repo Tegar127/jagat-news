@@ -8,7 +8,7 @@ import {
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 
 const initialValue = [
     {

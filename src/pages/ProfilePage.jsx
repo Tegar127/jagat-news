@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Edit3, Save, Trash2, Camera } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
 
 const ProfilePage = () => {
     const { user, updateUser } = useAuth();
