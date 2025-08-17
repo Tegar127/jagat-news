@@ -2,15 +2,17 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext'; // Tambahkan impor ini
+// Perbaiki impor icon di sini: ganti Announce dengan Megaphone
+import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone } from 'lucide-react'; 
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
-    const { logout } = useAuth(); // Ambil fungsi logout dari context
+    const { logout } = useAuth(); 
 
     const navLinks = [
         { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard" },
-        { to: "/admin/promo", icon: <Announce size={20} />, text: "Promo" },
+        // Gunakan icon yang benar di sini
+        { to: "/admin/promo", icon: <Megaphone size={20} />, text: "Promo" }, 
         { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita" },
         { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori" },
         { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna" },
@@ -50,7 +52,6 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                         {navLinks.map(link => <NavItem key={link.to} {...link} />)}
                     </div>
                     <div>
-                        {/* Tombol logout yang memanggil fungsi logout dari context */}
                         <button 
                             onClick={logout} 
                             className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg"
@@ -61,7 +62,6 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                     </div>
                 </nav>
             </aside>
-            {/* Overlay untuk mobile saat sidebar terbuka */}
             {isSidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black opacity-50 z-20 lg:hidden"></div>}
         </>
     );
