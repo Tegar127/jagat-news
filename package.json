@@ -18,6 +18,8 @@
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^42.0.2",
+    "@ckeditor/ckeditor5-react": "^8.0.0",
     "@eslint/js": "^9.25.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
