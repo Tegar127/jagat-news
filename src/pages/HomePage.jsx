@@ -1,3 +1,5 @@
+// src/pages/HomePage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe, Calendar } from 'lucide-react';
@@ -7,7 +9,7 @@ import SidebarNews from '../components/SidebarNews';
 
 const API_URL = 'http://localhost:5000/api';
 
-// Data statis hanya untuk kategori karena tidak dikelola di admin
+// Data statis untuk kategori
 const categories = [
     { name: "Politik", icon: <Briefcase className="w-8 h-8" />, color: "text-red-500", hoverBg: "hover:bg-red-100", href: '/berita?kategori=politik' },
     { name: "Teknologi", icon: <Cpu className="w-8 h-8" />, color: "text-blue-500", hoverBg: "hover:bg-blue-100", href: '/berita?kategori=teknologi' },
@@ -18,27 +20,29 @@ const categories = [
 
 // === CHILD COMPONENTS ===
 const NewsCard = ({ news, index }) => (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl flex flex-col border border-gray-200/80"
+    <div 
+        className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl flex flex-col border border-gray-200/80 group"
         data-aos="fade-up"
         data-aos-duration="800"
-        data-aos-delay={index * 150}
+        data-aos-delay={index * 100}
         data-aos-once="true"
     >
-        <div className="relative">
-            <img className="w-full h-48 object-cover" src={news.imageUrl || 'https://placehold.co/400x200?text=Jagat+News'} alt={`Cover Berita ${news.title}`} />
-            <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
+        <div className="relative overflow-hidden">
+            <img className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" src={news.imageUrl || 'https://placehold.co/400x200?text=Jagat+News'} alt={`Cover Berita ${news.title}`} />
+            <div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
         </div>
-        <div className="p-4 flex flex-col flex-grow">
-            <p className="text-sm font-semibold text-blue-700 mb-1">{news.author?.name || 'Jagat News'}</p>
-            <h3 className="text-lg font-bold text-gray-900 mb-2 h-14 overflow-hidden">{news.title}</h3>
-            <p className="text-sm text-gray-600 mb-4 flex-grow">{news.author?.name || 'Tanpa Penulis'}</p>
-            <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                <div className="flex items-center gap-1"><Star className="w-5 h-5 text-yellow-400 fill-current" /><span className="text-gray-800 font-bold">4.8</span></div>
-                <div className="text-sm text-gray-500"><span className="font-medium text-gray-700">128</span> komentar</div>
+        <div className="p-5 flex flex-col flex-grow">
+            <p className="text-sm font-semibold text-indigo-700 mb-2">{news.author?.name || 'Jagat News'}</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-3 h-16 overflow-hidden">{news.title}</h3>
+            <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date(news.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                </div>
+                <Link to={`/berita/${news.id}`} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                    Baca Selengkapnya &rarr;
+                </Link>
             </div>
-        </div>
-        <div className="p-3 bg-gray-50 border-t border-gray-200/80">
-            <Link to={`/berita/${news.id}`} className="block w-full text-center bg-blue-100 text-blue-700 font-semibold py-2 rounded-lg hover:bg-blue-200 transition-colors duration-200">Lihat Detail</Link>
         </div>
     </div>
 );
@@ -77,11 +81,11 @@ const PromoBannerSection = () => {
     }, [nextSlide]);
 
     if (loading) {
-        return <div className="h-[400px] flex justify-center items-center">Memuat promo...</div>;
+        return <div className="h-[400px] flex justify-center items-center bg-gray-200 rounded-2xl animate-pulse"></div>;
     }
     
     if (promoSlides.length === 0) {
-        return null; // Jangan render apapun jika tidak ada promo aktif
+        return null;
     }
 
     const currentSlide = promoSlides[currentIndex];
@@ -117,26 +121,22 @@ const PromoBannerSection = () => {
 const CategorySection = () => (
     <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-800 mb-4" data-aos="fade-down" data-aos-duration="800" data-aos-once="true">
-                Jelajahi Berdasarkan Kategori
-            </h2>
-            <p className="text-lg text-center text-gray-500 mb-12 max-w-2xl mx-auto" data-aos="fade-down" data-aos-duration="800" data-aos-delay="200" data-aos-once="true">
-                Temukan berita relevan dengan lebih cepat melalui kategori yang terstruktur.
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">{categories.map((c, index) => (
+             <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900" data-aos="fade-up">Jelajahi Berdasarkan Kategori</h2>
+                <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Temukan berita yang relevan dengan minat Anda lebih cepat.</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">{categories.map((c, index) => (
                  <a
                     key={c.name}
                     href={c.href}
-                    className={`group text-center p-6 bg-gray-50 rounded-xl border border-transparent hover:border-blue-500 hover:shadow-lg transform hover:-translate-y-2 transition-all duration-300 cursor-pointer ${c.hoverBg}`}
+                    className={`group text-center p-4 md:p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 ${c.hoverBg}`}
                     data-aos="fade-up"
                     data-aos-delay={index * 100}
-                    data-aos-duration="700"
-                    data-aos-once="true"
                 >
-            <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-colors duration-300 ${c.color} group-hover:bg-blue-500 group-hover:text-white`}>
+            <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
                 {c.icon}
             </div>
-            <h3 className="font-semibold text-gray-700 group-hover:text-blue-600 transition-colors duration-300">
+            <h3 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
                 {c.name}
             </h3>
         </a>
@@ -146,28 +146,75 @@ const CategorySection = () => (
     </section>
 );
 
-const MainContentSection = () => {
-    const [featuredNews, setFeaturedNews] = useState([]);
+const LatestAndPopularSection = () => {
     const [latestNews, setLatestNews] = useState([]);
     const [popularNews, setPopularNews] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchAllNews = async () => {
+        const fetchNews = async () => {
             try {
-                const [featuredRes, latestRes, popularRes] = await Promise.all([
-                    fetch(`${API_URL}/berita`),
+                const [latestRes, popularRes] = await Promise.all([
                     fetch(`${API_URL}/berita/latest`),
                     fetch(`${API_URL}/berita/popular`),
                 ]);
-                const featuredData = await featuredRes.json();
                 const latestData = await latestRes.json();
                 const popularData = await popularRes.json();
 
-                setFeaturedNews(featuredData.slice(0, 6)); // Ambil 6 berita unggulan
                 setLatestNews(latestData);
                 setPopularNews(popularData);
 
+            } catch (error) {
+                console.error("Gagal mengambil data berita:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNews();
+    }, []);
+
+    return (
+        <section id="content" className="py-16 bg-gray-50">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Kolom Berita Terbaru */}
+                    <div className="lg:col-span-2">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8" data-aos="fade-right">Berita Terbaru</h2>
+                         {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {[...Array(4)].map((_, i) => <div key={i} className="bg-gray-200 h-96 rounded-xl animate-pulse"></div>)}
+                            </div>
+                        ) : latestNews.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {latestNews.map((news, index) => (
+                                    <NewsCard key={news.id} news={news} index={index} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-center text-gray-500 py-10">Belum ada berita terbaru.</p>
+                        )}
+                    </div>
+                    
+                    {/* Sidebar Berita Populer */}
+                    <aside className="space-y-8" data-aos="fade-left" data-aos-delay="200">
+                        <SidebarNews title="Berita Terpopuler" news={popularNews} loading={loading} showRanking={true} />
+                    </aside>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const FeaturedSection = () => {
+    const [featuredNews, setFeaturedNews] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAllNews = async () => {
+            try {
+                const response = await fetch(`${API_URL}/berita`);
+                const data = await response.json();
+                setFeaturedNews(data.slice(0, 6)); 
             } catch (error) {
                 console.error("Gagal mengambil data berita:", error);
             } finally {
@@ -178,31 +225,32 @@ const MainContentSection = () => {
     }, []);
 
     return (
-        <section id="content" className="py-16 bg-gray-50">
+        <section id="featured-content" className="py-16 bg-white">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Kolom Berita Unggulan */}
-                    <div className="lg:col-span-2">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-6">Berita Unggulan</h2>
-                         {loading ? (
-                            <p>Memuat berita unggulan...</p>
-                        ) : featuredNews.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {featuredNews.map((news, index) => (
-                                    <NewsCard key={news.id} news={news} index={index} />
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-center text-gray-500">Belum ada berita unggulan.</p>
-                        )}
-                    </div>
-                    
-                    {/* Sidebar */}
-                    <aside className="space-y-8">
-                        <SidebarNews title="Berita Terbaru" news={latestNews} loading={loading} />
-                        <SidebarNews title="Berita Terpopuler" news={popularNews} loading={loading} showRanking={true} />
-                    </aside>
-                </div>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-12 text-center" data-aos="fade-up">
+                    Berita Unggulan Lainnya
+                </h2>
+                {loading ? (
+                    <p className="text-center text-gray-500">Memuat berita unggulan...</p>
+                ) : featuredNews.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {featuredNews.map((news, index) => (
+                                <NewsCard key={news.id} news={news} index={index} />
+                            ))}
+                        </div>
+                        <div className="text-center mt-12" data-aos="fade-up">
+                            <Link 
+                                to="/berita" 
+                                className="inline-block bg-white text-gray-800 font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 border border-gray-200"
+                            >
+                                Berita Unggulan Lainnya
+                            </Link>
+                        </div>
+                    </>
+                ) : (
+                     <p className="text-center text-gray-500">Belum ada berita unggulan untuk ditampilkan.</p>
+                )}
             </div>
         </section>
     );
@@ -222,8 +270,8 @@ export default function HomePage() {
       throttleDelay: 99,
       offset: 120,
       delay: 0,
-      duration: 600,
-      easing: 'ease-out',
+      duration: 800,
+      easing: 'ease-out-quad',
       once: true,
       mirror: false,
       anchorPlacement: 'top-bottom',
@@ -231,12 +279,13 @@ export default function HomePage() {
   }, []);
 
   return (
-    <>
-      <div className="container mx-auto px-4">
+    <div className="bg-gray-50">
+      <div className="container mx-auto px-4 pt-8">
         <PromoBannerSection />
       </div>
       <CategorySection />
-      <MainContentSection />
-    </>
+      <LatestAndPopularSection />
+      <FeaturedSection />
+    </div>
   )
 }
