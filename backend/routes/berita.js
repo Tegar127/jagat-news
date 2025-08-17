@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
                 category: true,
             },
             orderBy: {
-                publishedAt: 'desc' // Tampilkan yang terbaru
+                publishedAt: 'desc'
             }
         });
         res.json(posts);
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET a single news by ID (ENDPOINT BARU)
+// GET a single news by ID
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -44,41 +44,46 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST: Create new news
+// POST: Create new news (LOGIKA DIPERBAIKI)
 router.post('/', async (req, res) => {
-    const { title, status, author: authorName, category: categoryName, content, imageUrl } = req.body;
+    // Nama field category di body request adalah 'category'
+    const { title, status, category: categoryName, content, imageUrl } = req.body;
 
     try {
+        // 1. Ambil penulis pertama sebagai default. Di aplikasi nyata, ini harus dari sesi login.
         const author = await prisma.user.findFirst();
         if (!author) {
             return res.status(400).json({ error: "Tidak ada pengguna di sistem untuk dijadikan penulis." });
         }
 
+        // 2. Cari atau buat kategori berdasarkan nama.
         const category = await prisma.category.upsert({
             where: { name: categoryName },
-            update: {},
-            create: { name: categoryName },
+            update: {}, // Jangan update apa-apa jika sudah ada
+            create: { name: categoryName }, // Buat baru jika belum ada
         });
 
+        // 3. Buat post baru dengan authorId dan categoryId yang valid
         const newPost = await prisma.post.create({
             data: {
                 title,
                 content,
                 imageUrl,
                 status: status.toUpperCase(),
-                authorId: author.id,
-                categoryId: category.id,
+                authorId: author.id,      // Gunakan ID dari user yang ditemukan
+                categoryId: category.id,  // Gunakan ID dari kategori yang ditemukan/dibuat
             },
         });
         res.status(201).json(newPost);
 
     } catch (error) {
-        console.error("Error creating new post:", error);
+        console.error("Error saat membuat berita baru:", error);
         res.status(500).json({ error: "Gagal membuat berita baru: " + error.message });
     }
 });
 
-// PUT: Update news
+
+// PUT: Update news (LOGIKA DIPERBAIKI)
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { title, status, category: categoryName, content, imageUrl } = req.body;
@@ -105,6 +110,7 @@ router.put('/:id', async (req, res) => {
         res.status(500).json({ error: "Gagal mengupdate berita: " + error.message });
     }
 });
+
 
 // DELETE: Delete news
 router.delete('/:id', async (req, res) => {
