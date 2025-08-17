@@ -26,6 +26,7 @@ model Post {
   content     String?
   imageUrl    String?
   canBeCopied Boolean   @default(true)
+  viewCount   Int       @default(0) // Tambahkan baris ini
   status      Status    @default(DRAFT)
   publishedAt DateTime  @default(now())
   author      User      @relation(fields: [authorId], references: [id])

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe } from 'lucide-react';
+import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe, Calendar } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import SidebarNews from '../components/SidebarNews';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -145,52 +146,68 @@ const CategorySection = () => (
     </section>
 );
 
-const FeaturedNewsSection = () => {
+const MainContentSection = () => {
     const [featuredNews, setFeaturedNews] = useState([]);
+    const [latestNews, setLatestNews] = useState([]);
+    const [popularNews, setPopularNews] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchFeaturedNews = async () => {
+        const fetchAllNews = async () => {
             try {
-                const response = await fetch(`${API_URL}/berita`);
-                const data = await response.json();
-                setFeaturedNews(data.slice(0, 4)); // Ambil 4 berita teratas
+                const [featuredRes, latestRes, popularRes] = await Promise.all([
+                    fetch(`${API_URL}/berita`),
+                    fetch(`${API_URL}/berita/latest`),
+                    fetch(`${API_URL}/berita/popular`),
+                ]);
+                const featuredData = await featuredRes.json();
+                const latestData = await latestRes.json();
+                const popularData = await popularRes.json();
+
+                setFeaturedNews(featuredData.slice(0, 6)); // Ambil 6 berita unggulan
+                setLatestNews(latestData);
+                setPopularNews(popularData);
+
             } catch (error) {
-                console.error("Gagal mengambil berita unggulan:", error);
+                console.error("Gagal mengambil data berita:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchFeaturedNews();
+        fetchAllNews();
     }, []);
 
-    if (loading) return <div className="text-center py-10">Memuat berita unggulan...</div>;
-
     return (
-        <section id="featured" className="py-16 bg-gray-50">
+        <section id="content" className="py-16 bg-gray-50">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold text-center text-gray-800 mb-12" data-aos="fade-down" data-aos-duration="800" data-aos-once="true">
-                    Berita Unggulan
-                </h2>
-                {featuredNews.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {featuredNews.map((news, index) => (
-                            <NewsCard key={news.id} news={news} index={index} />
-                        ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Kolom Berita Unggulan */}
+                    <div className="lg:col-span-2">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-6">Berita Unggulan</h2>
+                         {loading ? (
+                            <p>Memuat berita unggulan...</p>
+                        ) : featuredNews.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {featuredNews.map((news, index) => (
+                                    <NewsCard key={news.id} news={news} index={index} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-center text-gray-500">Belum ada berita unggulan.</p>
+                        )}
                     </div>
-                ) : (
-                    <p className="text-center text-gray-500">Belum ada berita unggulan.</p>
-                )}
-                 <div className="mt-12 text-center">
-                    <Link to="/berita" className="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full shadow-md border border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
-                        data-aos="fade-up" data-aos-duration="800" data-aos-delay="200" data-aos-once="true">
-                        Lihat Semua Berita
-                    </Link>
+                    
+                    {/* Sidebar */}
+                    <aside className="space-y-8">
+                        <SidebarNews title="Berita Terbaru" news={latestNews} loading={loading} />
+                        <SidebarNews title="Berita Terpopuler" news={popularNews} loading={loading} showRanking={true} />
+                    </aside>
                 </div>
             </div>
         </section>
     );
 };
+
 
 export default function HomePage() {
   useEffect(() => {
@@ -219,7 +236,7 @@ export default function HomePage() {
         <PromoBannerSection />
       </div>
       <CategorySection />
-      <FeaturedNewsSection />
+      <MainContentSection />
     </>
   )
 }

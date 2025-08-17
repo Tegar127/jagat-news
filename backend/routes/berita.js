@@ -1,4 +1,3 @@
-// backend/routes/berita.js
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
@@ -39,14 +38,50 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET a single news by ID
+// GET latest news
+router.get('/latest', async (req, res) => {
+    try {
+        const latestPosts = await prisma.post.findMany({
+            take: 5,
+            orderBy: { publishedAt: 'desc' },
+            include: { category: true },
+        });
+        res.json(latestPosts);
+    } catch (error) {
+        res.status(500).json({ error: "Gagal mengambil berita terbaru." });
+    }
+});
+
+// GET popular news
+router.get('/popular', async (req, res) => {
+    try {
+        const popularPosts = await prisma.post.findMany({
+            take: 5,
+            orderBy: { viewCount: 'desc' },
+            include: { category: true },
+        });
+        res.json(popularPosts);
+    } catch (error) {
+        res.status(500).json({ error: "Gagal mengambil berita terpopuler." });
+    }
+});
+
+// GET a single news by ID (dan increment view count)
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const post = await prisma.post.findUnique({
-            where: { id: parseInt(id) },
-            include: { author: true, category: true },
-        });
+        // Gunakan transaksi untuk memastikan keduanya berjalan
+        const [post, _] = await prisma.$transaction([
+            prisma.post.findUnique({
+                where: { id: parseInt(id) },
+                include: { author: true, category: true },
+            }),
+            prisma.post.update({
+                where: { id: parseInt(id) },
+                data: { viewCount: { increment: 1 } },
+            })
+        ]);
+        
         if (post) {
             res.json(post);
         } else {
@@ -107,7 +142,7 @@ router.put('/:id', upload.single('imageFile'), async (req, res) => {
     } else {
         finalImageUrl = imageUrl;
     }
-
+    
     try {
         const category = await prisma.category.upsert({
             where: { name: categoryName },
