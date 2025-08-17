@@ -7,54 +7,54 @@ const AuthContext = createContext(null);
 const API_URL = 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
-    // Coba ambil data user dari localStorage saat pertama kali load
     const [user, setUser] = useState(() => {
         try {
             const storedUser = localStorage.getItem('user');
             return storedUser ? JSON.parse(storedUser) : null;
-        } catch {
-            return null;
-        }
+        } catch { return null; }
     });
     const navigate = useNavigate();
 
-    const login = async (email, password) => {
-        try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Jika login gagal, lempar error dengan pesan dari server
-                throw new Error(data.error || 'Gagal untuk login.');
-            }
-            
-            // Jika berhasil, simpan data user ke state dan localStorage
-            setUser(data);
-            localStorage.setItem('user', JSON.stringify(data));
-            
+    const handleLoginSuccess = (userData) => {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        // Arahkan ke dasbor jika admin, atau ke beranda jika user biasa
+        if (userData.role === 'ADMIN' || userData.role === 'ADMINISTRATOR') {
             navigate('/admin/dashboard');
-
-        } catch (error) {
-            console.error('Login failed:', error);
-            // Lempar kembali error agar bisa ditangkap di halaman login
-            throw error;
+        } else {
+            navigate('/');
         }
+    };
+
+    const login = async (email, password) => {
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        handleLoginSuccess(data);
+    };
+
+    const loginWithGoogle = async (token) => {
+        const response = await fetch(`${API_URL}/auth/google-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        handleLoginSuccess(data);
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('user'); // Hapus data dari localStorage saat logout
+        localStorage.removeItem('user');
         navigate('/login');
     };
 
-    const value = { user, login, logout, isAuthenticated: !!user };
+    const value = { user, login, logout, loginWithGoogle, isAuthenticated: !!user };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

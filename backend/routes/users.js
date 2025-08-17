@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const bcrypt = require('bcrypt');
 
 // GET all users
 router.get('/', async (req, res) => {
@@ -21,15 +22,15 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const { name, email, password, role } = req.body;
     try {
+        const hashedPassword = await bcrypt.hash(password, 10); // <-- Hash password
         const newUser = await prisma.user.create({
             data: {
                 name,
                 email,
-                password, // Di aplikasi nyata, password harus di-hash
+                password: hashedPassword, // <-- Simpan password yang sudah di-hash
                 role
             }
         });
-        // Kirim kembali data tanpa password
         const { password: _, ...userWithoutPassword } = newUser;
         res.status(201).json(userWithoutPassword);
     } catch (error) {
