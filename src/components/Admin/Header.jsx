@@ -1,4 +1,4 @@
-// src/components/Admin/Header.jsx
+// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/components/Admin/Header.jsx
 
 import React from 'react';
 import { Menu, Bell, UserCircle } from 'lucide-react';
@@ -25,7 +25,11 @@ const Header = ({ setSidebarOpen }) => {
                         <p className="font-semibold text-sm text-gray-800">{user ? user.name : 'Tegar'}</p>
                         <p className="text-xs text-gray-500">{user ? user.role : 'Administrator'}</p>
                     </span>
-                    <UserCircle size={36} className="text-gray-600" />
+                    {user && user.avatar ? (
+                        <img src={user.avatar} alt="Avatar" className="w-9 h-9 rounded-full object-cover" />
+                    ) : (
+                        <UserCircle size={36} className="text-gray-600" />
+                    )}
                 </div>
             </div>
         </header>

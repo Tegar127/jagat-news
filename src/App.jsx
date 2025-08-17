@@ -1,3 +1,5 @@
+// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/App.jsx
+
 // File: src/App.jsx
 
 import React from 'react';
@@ -11,6 +13,7 @@ import BeritaPage from './pages/BeritaPage';
 import BeritaDetailPage from './pages/BeritaDetailPage';
 import AboutPage from './pages/AboutPage';
 import LoginModal from './components/LoginModal'; // <-- Impor komponen modal baru
+import ProfilePage from './pages/ProfilePage';
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -56,6 +59,7 @@ const AppContent = () => {
                 <Route path="/berita/:id" element={<BeritaDetailPage />} />
                 <Route path="/kontak" element={<KontakPage />} />
                 <Route path="/tentang" element={<AboutPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
             {/* HAPUS Rute yang tidak menggunakan layout (Login & Daftar) */}

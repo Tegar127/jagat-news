@@ -1,4 +1,4 @@
-// src/components/Navbar.jsx
+// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/components/Navbar.jsx
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,11 @@ const Navbar = () => {
     const renderProfileDropdown = () => (
         <div className="relative">
             <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center focus:outline-none">
-                <UserCircle className="w-8 h-8 text-gray-600 hover:text-blue-600" />
+                {user.avatar ? (
+                    <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                    <UserCircle className="w-8 h-8 text-gray-600 hover:text-blue-600" />
+                )}
             </button>
             {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
@@ -29,7 +33,7 @@ const Navbar = () => {
                             Dashboard
                         </Link>
                     )}
-                    <Link to="/profil" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                    <Link to="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
                         <User className="w-4 h-4 mr-2" />
                         Kelola Profil
                     </Link>

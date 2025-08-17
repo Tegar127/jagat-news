@@ -1,4 +1,4 @@
-// backend/server.js
+// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/backend/server.js
 
 const express = require('express');
 const cors = require('cors');
@@ -11,6 +11,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use(express.urlencoded({ extended: true }));
+
 
 // Import Routes
 const beritaRoutes = require('./routes/berita');

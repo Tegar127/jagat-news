@@ -1,16 +1,26 @@
-// backend/routes/users.js
+// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/backend/routes/users.js
 
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const path = require('path');
+
+// Konfigurasi Multer untuk avatar
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'public/uploads/avatars/'),
+    filename: (req, file, cb) => cb(null, 'avatar-' + Date.now() + path.extname(file.originalname))
+});
+const upload = multer({ storage });
+
 
 // GET all users
 router.get('/', async (req, res) => {
     try {
         const users = await prisma.user.findMany({
-            select: { id: true, name: true, email: true, role: true } // Jangan kirim password
+            select: { id: true, name: true, email: true, role: true, avatar: true } // Jangan kirim password
         });
         res.json(users);
     } catch (error) {
@@ -73,5 +83,34 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: "Gagal menghapus pengguna." });
     }
 });
+
+// New route for profile update
+router.put('/profile/:id', upload.single('avatar'), async (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    let avatarUrl;
+
+    if (req.file) {
+        avatarUrl = `${req.protocol}://${req.get('host')}/uploads/avatars/${req.file.filename}`;
+    }
+
+    try {
+        const dataToUpdate = { name };
+        if (avatarUrl) {
+            dataToUpdate.avatar = avatarUrl;
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: parseInt(id) },
+            data: dataToUpdate,
+        });
+
+        const { password, ...userWithoutPassword } = updatedUser;
+        res.json(userWithoutPassword);
+    } catch (error) {
+        res.status(500).json({ error: "Gagal memperbarui profil." });
+    }
+});
+
 
 module.exports = router;

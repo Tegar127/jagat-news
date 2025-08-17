@@ -1,3 +1,5 @@
+// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/context/AuthContext.jsx
+
 // src/context/AuthContext.jsx
 
 import React, { createContext, useContext, useState } from 'react';
@@ -36,6 +38,12 @@ export const AuthProvider = ({ children }) => {
         // SEMUA PENGGUNA DIARAHKAN KE HALAMAN UTAMA SETELAH LOGIN
         navigate('/');
     };
+    
+    const updateUser = (newUserData) => {
+        setUser(newUserData);
+        localStorage.setItem('user', JSON.stringify(newUserData));
+    };
+
 
     const login = async (email, password) => {
         const response = await fetch(`${API_URL}/auth/login`, {
@@ -71,6 +79,7 @@ export const AuthProvider = ({ children }) => {
         logout, 
         loginWithGoogle, 
         isAuthenticated: !!user,
+        updateUser,
         // Tambahkan state dan fungsi modal ke context value
         isModalOpen,
         modalType,
