@@ -8,18 +8,23 @@ const API_URL = 'http://localhost:5000/api';
 const BeritaAdminPage = () => {
     const [newsData, setNewsData] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', author: '', status: 'DRAFT', imageUrl: '', content: '' });
+    // Hapus 'author' dari state awal karena tidak akan diisi dari form
+    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', status: 'DRAFT', imageUrl: '', content: '' });
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchNews = async () => {
-        const response = await fetch(`${API_URL}/berita`);
-        const data = await response.json();
-        const formattedData = data.map(news => ({
-            ...news,
-            author: news.author ? news.author.name : 'N/A',
-            category: news.category ? news.category.name : 'N/A',
-        }));
-        setNewsData(formattedData);
+        try {
+            const response = await fetch(`${API_URL}/berita`);
+            const data = await response.json();
+            const formattedData = data.map(news => ({
+                ...news,
+                author: news.author ? news.author.name : 'N/A',
+                category: news.category ? news.category.name : 'N/A',
+            }));
+            setNewsData(formattedData);
+        } catch (error) {
+            console.error("Gagal mengambil data:", error);
+        }
     };
 
     useEffect(() => {
@@ -32,7 +37,8 @@ const BeritaAdminPage = () => {
     };
 
     const handleAddNew = () => {
-        setCurrentNews({ id: null, title: '', category: '', author: '', status: 'DRAFT', imageUrl: '', content: '' });
+        // Reset state tanpa 'author'
+        setCurrentNews({ id: null, title: '', category: '', status: 'DRAFT', imageUrl: '', content: '' });
         setIsFormVisible(true);
     };
 
@@ -46,13 +52,17 @@ const BeritaAdminPage = () => {
         const method = currentNews.id ? 'PUT' : 'POST';
         const url = currentNews.id ? `${API_URL}/berita/${currentNews.id}` : `${API_URL}/berita`;
 
-        // Ambil author dari data yang ada jika mengedit, karena tidak ada di form
-        const authorToSubmit = currentNews.author || "Admin";
-
+        // **BAGIAN PENTING YANG DIPERBAIKI**
+        // Kita salin data dari state dan hapus field 'author' sebelum mengirim
+        const dataToSend = { ...currentNews };
+        if (dataToSend.author) {
+           delete dataToSend.author; // Hapus properti author agar tidak terkirim
+        }
+        
         await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...currentNews, author: authorToSubmit }),
+            body: JSON.stringify(dataToSend), // Kirim data yang sudah bersih
         });
 
         fetchNews();
@@ -72,6 +82,7 @@ const BeritaAdminPage = () => {
 
     return (
         <div>
+            {/* ... (bagian JSX lainnya tetap sama, tidak perlu diubah) ... */}
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Kelola Berita</h1>
                 <button onClick={handleAddNew} className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
