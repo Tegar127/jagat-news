@@ -2,32 +2,25 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-// Perbaiki impor icon di sini: ganti Announce dengan Megaphone
-import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone } from 'lucide-react'; 
+import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
-    const { logout } = useAuth(); 
+    const { user, logout } = useAuth(); // Ambil data user dari context
 
     const navLinks = [
-        { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard" },
-        // Gunakan icon yang benar di sini
-        { to: "/admin/promo", icon: <Megaphone size={20} />, text: "Promo" }, 
-        { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita" },
-        { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori" },
-        { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna" },
+        { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard", roles: ['ADMIN', 'ADMINISTRATOR'] },
+        { to: "/admin/promo", icon: <Megaphone size={20} />, text: "Promo", roles: ['ADMIN', 'ADMINISTRATOR'] },
+        { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita", roles: ['ADMIN', 'ADMINISTRATOR'] },
+        { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori", roles: ['ADMIN', 'ADMINISTRATOR'] },
+        // Menu ini hanya untuk ADMINISTRATOR
+        { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna", roles: ['ADMINISTRATOR'] },
     ];
 
     const NavItem = ({ to, icon, text }) => (
         <NavLink
             to={to}
-            className={({ isActive }) =>
-                `flex items-center px-4 py-3 transition-colors duration-200 rounded-lg ${
-                    isActive
-                        ? "bg-blue-600 text-white shadow-lg"
-                        : "text-gray-600 hover:bg-gray-200"
-                }`
-            }
+            className={({ isActive }) => `flex items-center px-4 py-3 transition-colors duration-200 rounded-lg ${isActive ? "bg-blue-600 text-white shadow-lg" : "text-gray-600 hover:bg-gray-200"}`}
             onClick={() => setSidebarOpen(false)}
         >
             {icon}
@@ -40,7 +33,7 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
             <aside className={`fixed inset-y-0 left-0 bg-white shadow-xl z-30 w-64 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2">
-                         <Newspaper className="w-8 h-8 text-blue-700" />
+                        <Newspaper className="w-8 h-8 text-blue-700" />
                         <span className="text-xl font-bold text-gray-800">Admin Jagat</span>
                     </div>
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500 hover:text-gray-800">
@@ -49,13 +42,13 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                 </div>
                 <nav className="p-4 flex flex-col justify-between h-[calc(100%-65px)]">
                     <div className="space-y-2">
-                        {navLinks.map(link => <NavItem key={link.to} {...link} />)}
+                        {navLinks.map(link => (
+                            // Render link hanya jika role user diizinkan
+                            link.roles.includes(user?.role) && <NavItem key={link.to} {...link} />
+                        ))}
                     </div>
                     <div>
-                        <button 
-                            onClick={logout} 
-                            className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg"
-                        >
+                        <button onClick={logout} className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg">
                             <LogOut size={20} />
                             <span className="ml-3 font-medium">Keluar</span>
                         </button>
