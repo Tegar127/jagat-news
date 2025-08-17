@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, Search, Edit, Trash2, Upload, XCircle } from 'lucide-react';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 const API_URL = 'http://localhost:5000/api';
 
 const BeritaAdminPage = () => {
     const [newsData, setNewsData] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [currentNews, setCurrentNews] = useState({
-        id: null,
-        title: '',
-        category: '',
-        status: 'DRAFT',
-        content: '',
+    const [currentNews, setCurrentNews] = useState({ 
+        id: null, 
+        title: '', 
+        category: '', 
+        status: 'DRAFT', 
+        content: '', 
         canBeCopied: true,
-        images: []
+        images: [] // Menyimpan gambar yang sudah ada saat mengedit
     });
-    const [imageFiles, setImageFiles] = useState([]);
+    const [imageFiles, setImageFiles] = useState([]); // Menyimpan file gambar baru yang akan diunggah
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchNews = async () => {
@@ -46,15 +44,19 @@ const BeritaAdminPage = () => {
     };
 
     const handleFileChange = (e) => {
+        // Gabungkan file yang sudah ada dengan yang baru dipilih
         setImageFiles(prevFiles => [...prevFiles, ...Array.from(e.target.files)]);
     };
 
     const handleRemoveNewImage = (index) => {
         setImageFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
     };
-
+    
+    // Fungsi untuk menghapus gambar yang sudah ada (perlu implementasi di backend)
     const handleRemoveExistingImage = async (imageId) => {
         if (window.confirm('Yakin ingin menghapus gambar ini secara permanen?')) {
+            // TODO: Buat endpoint DELETE /api/berita/image/:imageId di backend
+            // await fetch(`${API_URL}/berita/image/${imageId}`, { method: 'DELETE' });
             setCurrentNews(prev => ({
                 ...prev,
                 images: prev.images.filter(img => img.id !== imageId)
@@ -62,6 +64,7 @@ const BeritaAdminPage = () => {
             alert("Fitur hapus gambar yang sudah ada belum diimplementasikan di backend, tapi sudah dihapus dari tampilan form.");
         }
     };
+
 
     const handleAddNew = () => {
         setCurrentNews({ id: null, title: '', category: '', status: 'DRAFT', content: '', canBeCopied: true, images: [] });
@@ -91,6 +94,7 @@ const BeritaAdminPage = () => {
             });
         }
         
+        // Jika tidak ada gambar baru, dan ini adalah post baru, setidaknya harus ada 1 gambar.
         if (!currentNews.id && imageFiles.length === 0) {
             alert("Silakan unggah setidaknya satu gambar untuk berita baru.");
             return;
@@ -124,13 +128,8 @@ const BeritaAdminPage = () => {
             fetchNews();
         }
     };
-    
-    const handleEditorChange = (event, editor) => {
-        const data = editor.getData();
-        setCurrentNews(prevState => ({ ...prevState, content: data }));
-    };
 
-    const filteredNews = newsData.filter(news =>
+    const filteredNews = newsData.filter(news => 
         news.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -148,6 +147,7 @@ const BeritaAdminPage = () => {
                 <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200/80 mb-6">
                     <h2 className="text-xl font-bold mb-4">{currentNews.id ? 'Edit Berita' : 'Tambah Berita Baru'}</h2>
                     <form onSubmit={handleSubmit}>
+                        {/* Input fields for title, category, content, etc. */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Judul</label>
                             <input type="text" name="title" value={currentNews.title} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
@@ -158,22 +158,20 @@ const BeritaAdminPage = () => {
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Isi Berita</label>
-                            <CKEditor
-                                editor={ClassicEditor}
-                                data={currentNews.content}
-                                onChange={handleEditorChange}
-                            />
+                            <textarea name="content" value={currentNews.content} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" rows="5" placeholder="Tulis isi berita di sini..."></textarea>
                         </div>
 
+                        {/* Image Upload Section */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Gambar</label>
+                            {/* Display existing images */}
                             {currentNews.id && currentNews.images && currentNews.images.length > 0 && (
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-4">
                                     {currentNews.images.map((image) => (
                                         <div key={image.id} className="relative">
                                             <img src={image.url} alt="Gambar berita" className="w-full h-24 object-cover rounded-lg" />
-                                            <button
-                                                type="button"
+                                            <button 
+                                                type="button" 
                                                 onClick={() => handleRemoveExistingImage(image.id)}
                                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
                                             >
@@ -183,13 +181,14 @@ const BeritaAdminPage = () => {
                                     ))}
                                 </div>
                             )}
+                            {/* Display newly selected images */}
                             {imageFiles.length > 0 && (
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-4">
                                     {imageFiles.map((file, index) => (
                                         <div key={index} className="relative">
                                             <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-24 object-cover rounded-lg" />
-                                            <button
-                                                type="button"
+                                            <button 
+                                                type="button" 
                                                 onClick={() => handleRemoveNewImage(index)}
                                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
                                             >
@@ -200,6 +199,7 @@ const BeritaAdminPage = () => {
                                 </div>
                             )}
 
+                            {/* File Input */}
                             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                                 <div className="space-y-1 text-center">
                                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
@@ -214,6 +214,7 @@ const BeritaAdminPage = () => {
                             </div>
                         </div>
 
+                        {/* Status and other options */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
                             <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
@@ -228,6 +229,7 @@ const BeritaAdminPage = () => {
                             </label>
                         </div>
 
+                        {/* Action buttons */}
                         <div className="flex justify-end gap-4">
                             <button type="button" onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Batal</button>
                             <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">Simpan</button>
@@ -238,7 +240,7 @@ const BeritaAdminPage = () => {
 
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200/80">
                 <div className="mb-4">
-                    <div className="relative">
+                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input type="text" placeholder="Cari berita..." onChange={e => setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
@@ -266,8 +268,8 @@ const BeritaAdminPage = () => {
                                         </span>
                                     </td>
                                     <td className="py-3 px-4 flex gap-2">
-                                        <button onClick={() => handleEdit(news)} className="text-blue-600 hover:text-blue-800"><Edit size={18} /></button>
-                                        <button onClick={() => handleDelete(news.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18} /></button>
+                                        <button onClick={() => handleEdit(news)} className="text-blue-600 hover:text-blue-800"><Edit size={18}/></button>
+                                        <button onClick={() => handleDelete(news.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18}/></button>
                                     </td>
                                 </tr>
                             ))}
