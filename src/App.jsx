@@ -1,7 +1,6 @@
 // File: src/App.jsx
 
 import React from 'react';
-// Pastikan 'Outlet' dan 'Navigate' diimpor dari react-router-dom
 import { BrowserRouter as Router, Routes, Route, Link, Outlet, Navigate } from 'react-router-dom';
 
 // Import Halaman Publik
@@ -19,6 +18,7 @@ import DashboardPage from './components/Admin/DashboardPage';
 import BeritaAdminPage from './components/Admin/BeritaAdminPage';
 import KategoriAdminPage from './components/Admin/KategoriAdminPage';
 import UserAdminPage from './components/Admin/UserAdminPage';
+import PromoAdminPage from './components/Admin/PromoAdminPage'; // <-- Impor halaman promo baru
 
 // Impor dari Context dan Protected Route
 import { AuthProvider } from './context/AuthContext';
@@ -62,8 +62,8 @@ const AppContent = () => {
             <Route path="/daftar" element={<DaftarPage />} />
 
             {/* Rute admin yang dilindungi dan menggunakan AdminLayout */}
-            <Route 
-                path="/admin" 
+            <Route
+                path="/admin"
                 element={
                     <ProtectedRoute>
                         <AdminLayout />
@@ -73,6 +73,7 @@ const AppContent = () => {
                 {/* Rute anak dari /admin. Ini yang akan dirender oleh <Outlet/> */}
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="promo" element={<PromoAdminPage />} /> {/* <-- Tambahkan route ini */}
                 <Route path="berita" element={<BeritaAdminPage />} />
                 <Route path="kategori" element={<KategoriAdminPage />} />
                 <Route path="users" element={<UserAdminPage />} />

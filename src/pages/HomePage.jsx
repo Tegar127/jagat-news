@@ -1,5 +1,3 @@
-// src/pages/HomePage.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe } from 'lucide-react';
@@ -8,13 +6,7 @@ import 'aos/dist/aos.css';
 
 const API_URL = 'http://localhost:5000/api';
 
-// === MOCK DATA (HANYA UNTUK PROMO & KATEGORI) ===
-const promoSlides = [
-  { id: 1, title: "Sorotan Utama Hari Ini", subtitle: "Perkembangan terbaru dalam dunia teknologi dan politik global.", buttonText: "Baca Selengkapnya", imageUrl: "https://placehold.co/800x400/3B82F6/FFFFFF?text=Berita+Utama" },
-  { id: 2, title: "Analisis Mendalam", subtitle: "Kupas tuntas isu-isu terkini bersama para ahli di bidangnya.", buttonText: "Lihat Analisis", imageUrl: "https://placehold.co/800x400/10B981/FFFFFF?text=Analisis+Ahli" },
-  { id: 3, title: "Liputan Khusus Olahraga", subtitle: "Jangan lewatkan momen-momen terbaik dari dunia olahraga.", buttonText: "Jelajahi Sekarang", imageUrl: "https://placehold.co/800x400/F59E0B/FFFFFF?text=Liputan+Olahraga" }
-];
-
+// Data statis hanya untuk kategori karena tidak dikelola di admin
 const categories = [
     { name: "Politik", icon: <Briefcase className="w-8 h-8" />, color: "text-red-500", hoverBg: "hover:bg-red-100", href: '/berita?kategori=politik' },
     { name: "Teknologi", icon: <Cpu className="w-8 h-8" />, color: "text-blue-500", hoverBg: "hover:bg-blue-100", href: '/berita?kategori=teknologi' },
@@ -32,7 +24,7 @@ const NewsCard = ({ news, index }) => (
         data-aos-once="true"
     >
         <div className="relative">
-            <img className="w-full h-48 object-cover" src={news.imageUrl || 'https://placehold.co/400x200'} alt={`Cover Berita ${news.title}`} />
+            <img className="w-full h-48 object-cover" src={news.imageUrl || 'https://placehold.co/400x200?text=Jagat+News'} alt={`Cover Berita ${news.title}`} />
             <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
         </div>
         <div className="p-4 flex flex-col flex-grow">
@@ -53,18 +45,58 @@ const NewsCard = ({ news, index }) => (
 
 // === SECTIONS ===
 const PromoBannerSection = () => {
-    // ... (Komponen ini tidak berubah, masih menggunakan data statis)
+    const [promoSlides, setPromoSlides] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const nextSlide = useCallback(() => { setCurrentIndex(prev => (prev === promoSlides.length - 1 ? 0 : prev + 1)); }, []);
-    useEffect(() => { const timer = setInterval(nextSlide, 5000); return () => clearInterval(timer); }, [nextSlide]);
+
+    useEffect(() => {
+        const fetchPromos = async () => {
+            try {
+                const response = await fetch(`${API_URL}/promo`);
+                const data = await response.json();
+                setPromoSlides(data);
+            } catch (error) {
+                console.error("Gagal mengambil data promo:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPromos();
+    }, []);
+
+    const nextSlide = useCallback(() => {
+        if (promoSlides.length > 0) {
+            setCurrentIndex(prev => (prev === promoSlides.length - 1 ? 0 : prev + 1));
+        }
+    }, [promoSlides.length]);
+
+    useEffect(() => {
+        const timer = setInterval(nextSlide, 5000);
+        return () => clearInterval(timer);
+    }, [nextSlide]);
+
+    if (loading) {
+        return <div className="h-[400px] flex justify-center items-center">Memuat promo...</div>;
+    }
+    
+    if (promoSlides.length === 0) {
+        return null; // Jangan render apapun jika tidak ada promo aktif
+    }
+
     const currentSlide = promoSlides[currentIndex];
+
     return (
         <section className="relative w-full h-[400px] md:h-[350px] lg:h-[400px] rounded-2xl overflow-hidden my-8 shadow-2xl shadow-blue-500/20"
             data-aos="fade-zoom-in"
             data-aos-duration="1000"
             data-aos-once="true"
         >
-            {promoSlides.map((slide, index) => ( <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}><img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover"/><div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div></div> ))}
+            {promoSlides.map((slide, index) => (
+                 <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}>
+                    <img src={slide.imageUrl || 'https://placehold.co/800x400/3B82F6/FFFFFF?text=Jagat+News'} alt={slide.title} className="w-full h-full object-cover"/>
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
+                </div>
+             ))}
             <div className="relative z-10 h-full flex flex-col justify-center items-start text-white p-8 md:p-12 lg:p-16">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 max-w-lg" data-aos="fade-right" data-aos-duration="800" data-aos-once="true">
                     {currentSlide.title}
@@ -72,9 +104,9 @@ const PromoBannerSection = () => {
                 <p className="text-lg md:text-xl mb-6 max-w-md opacity-90" data-aos="fade-right" data-aos-duration="800" data-aos-delay="200" data-aos-once="true">
                     {currentSlide.subtitle}
                 </p>
-                <a href="/berita" className="bg-white text-blue-700 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-all duration-300 transform hover:scale-105" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400" data-aos-once="true">
-                    {currentSlide.buttonText}
-                </a>
+                <Link to={currentSlide.buttonLink || '#'} className="bg-white text-blue-700 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-all duration-300 transform hover:scale-105" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400" data-aos-once="true">
+                    {currentSlide.buttonText || 'Baca Selengkapnya'}
+                </Link>
             </div>
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">{promoSlides.map((_, index) => ( <button key={index} onClick={() => setCurrentIndex(index)} className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-white w-6' : 'bg-white/50'}`} /> ))}</div>
         </section>
@@ -82,7 +114,6 @@ const PromoBannerSection = () => {
 };
 
 const CategorySection = () => (
-    // ... (Komponen ini tidak berubah, masih menggunakan data statis)
     <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-4" data-aos="fade-down" data-aos-duration="800" data-aos-once="true">
@@ -141,11 +172,15 @@ const FeaturedNewsSection = () => {
                 <h2 className="text-3xl font-bold text-center text-gray-800 mb-12" data-aos="fade-down" data-aos-duration="800" data-aos-once="true">
                     Berita Unggulan
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {featuredNews.map((news, index) => (
-                        <NewsCard key={news.id} news={news} index={index} />
-                    ))}
-                </div>
+                {featuredNews.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {featuredNews.map((news, index) => (
+                            <NewsCard key={news.id} news={news} index={index} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-500">Belum ada berita unggulan.</p>
+                )}
                  <div className="mt-12 text-center">
                     <Link to="/berita" className="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full shadow-md border border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
                         data-aos="fade-up" data-aos-duration="800" data-aos-delay="200" data-aos-once="true">
@@ -157,7 +192,6 @@ const FeaturedNewsSection = () => {
     );
 };
 
-// === MAIN HOMEPAGE COMPONENT ===
 export default function HomePage() {
   useEffect(() => {
     AOS.init({

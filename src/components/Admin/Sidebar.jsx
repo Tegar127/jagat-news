@@ -10,6 +10,7 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
 
     const navLinks = [
         { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard" },
+        { to: "/admin/promo", icon: <Announce size={20} />, text: "Promo" },
         { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita" },
         { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori" },
         { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna" },

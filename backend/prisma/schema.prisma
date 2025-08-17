@@ -9,6 +9,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ... (Model User, Post, Category tetap sama) ...
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -21,10 +23,10 @@ model User {
 model Post {
   id          Int       @id @default(autoincrement())
   title       String
-  content     String?   // Tambahkan ini untuk isi berita lengkap
-  imageUrl    String?   // Tambahkan ini untuk URL gambar
+  content     String?
+  imageUrl    String?
   status      Status    @default(DRAFT)
-  publishedAt DateTime  @default(now()) // Tambahkan ini
+  publishedAt DateTime  @default(now())
   author      User      @relation(fields: [authorId], references: [id])
   authorId    Int
   category    Category? @relation(fields: [categoryId], references: [id])
@@ -35,6 +37,17 @@ model Category {
   id    Int    @id @default(autoincrement())
   name  String @unique
   posts Post[]
+}
+
+// TAMBAHKAN MODEL BARU DI SINI
+model Promo {
+  id          Int     @id @default(autoincrement())
+  title       String
+  subtitle    String?
+  imageUrl    String?
+  buttonText  String?
+  buttonLink  String?
+  isActive    Boolean @default(true)
 }
 
 enum Role {
