@@ -1,10 +1,11 @@
-// File: backend/routes/berita.js (Diperbaiki)
+// backend/routes/berita.js
+
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// GET all news (assuming you have this route)
+// GET all news
 router.get('/', async (req, res) => {
     try {
         const posts = await prisma.post.findMany({
@@ -12,6 +13,9 @@ router.get('/', async (req, res) => {
                 author: true,
                 category: true,
             },
+            orderBy: {
+                publishedAt: 'desc' // Tampilkan yang terbaru
+            }
         });
         res.json(posts);
     } catch (error) {
@@ -19,33 +23,49 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET a single news by ID (ENDPOINT BARU)
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const post = await prisma.post.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                author: true,
+                category: true,
+            },
+        });
+        if (post) {
+            res.json(post);
+        } else {
+            res.status(404).json({ error: "Berita tidak ditemukan" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: "Gagal mengambil detail berita: " + error.message });
+    }
+});
 
-// POST: Membuat berita baru (MODIFIKASI)
+// POST: Create new news
 router.post('/', async (req, res) => {
-    // Ambil title, status, authorName, dan categoryName dari body request
-    const { title, status, author: authorName, category: categoryName } = req.body;
+    const { title, status, author: authorName, category: categoryName, content, imageUrl } = req.body;
 
     try {
-        // 1. Ambil penulis (author) pertama sebagai penulis default.
-        // Di aplikasi nyata, ini seharusnya diambil dari data sesi pengguna yang sedang login.
         const author = await prisma.user.findFirst();
         if (!author) {
-            return res.status(400).json({ error: "Tidak ada pengguna di dalam sistem untuk dijadikan penulis." });
+            return res.status(400).json({ error: "Tidak ada pengguna di sistem untuk dijadikan penulis." });
         }
 
-        // 2. Gunakan `upsert` untuk mencari atau membuat kategori.
-        // `upsert` akan mencari kategori berdasarkan nama. Jika tidak ditemukan, ia akan membuatnya.
         const category = await prisma.category.upsert({
             where: { name: categoryName },
             update: {},
             create: { name: categoryName },
         });
 
-        // 3. Buat post baru dengan ID penulis dan kategori yang sudah valid
         const newPost = await prisma.post.create({
             data: {
                 title,
-                status: status.toUpperCase(), // Pastikan status dalam format uppercase
+                content,
+                imageUrl,
+                status: status.toUpperCase(),
                 authorId: author.id,
                 categoryId: category.id,
             },
@@ -58,11 +78,10 @@ router.post('/', async (req, res) => {
     }
 });
 
-
-// PUT: Mengupdate berita (assuming you have this route)
+// PUT: Update news
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { title, status, category: categoryName } = req.body;
+    const { title, status, category: categoryName, content, imageUrl } = req.body;
 
     try {
         const category = await prisma.category.upsert({
@@ -75,6 +94,8 @@ router.put('/:id', async (req, res) => {
             where: { id: parseInt(id) },
             data: {
                 title,
+                content,
+                imageUrl,
                 status: status.toUpperCase(),
                 categoryId: category.id,
             },
@@ -85,7 +106,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE: Menghapus berita (assuming you have this route)
+// DELETE: Delete news
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -95,6 +116,5 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: "Gagal menghapus berita: " + error.message });
     }
 });
-
 
 module.exports = router;

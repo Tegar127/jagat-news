@@ -1,39 +1,10 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Newspaper, ChevronRight, Zap } from 'lucide-react';
+// src/pages/BeritaPage.jsx
 
-export const beritaData = {
-    teknologi: [
-        {
-          id: 1,
-          title: 'Revolusi AI Generatif: Dampaknya pada Industri Kreatif',
-          description: 'Kecerdasan buatan generatif telah mengubah lanskap industri kreatif, mulai dari penulisan hingga desain grafis.',
-          imageUrl: 'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?q=80&w=2070&auto=format&fit=crop',
-          author: 'Andi Wijaya',
-          category: 'Teknologi'
-        },
-    ],
-    olahraga: [
-        {
-          id: 2,
-          title: 'Timnas Garuda Lolos ke Babak Final Piala Asia',
-          description: 'Sebuah kemenangan dramatis melawan tim unggulan membawa Timnas Garuda selangkah lebih dekat menuju gelar juara.',
-          imageUrl: 'https://asset.kompas.id/S6M6su24yO6U5D3uWDLcc9_i7qo=/1024x683/https%3A%2F%2Fasset.kgnewsroom.com%2Fphoto%2Fpre%2F2022%2F12%2F07%2F0e98f6ff-1e8d-46d3-b504-ecce96de9787_jpg.jpg',
-          author: 'Budi Santoso',
-          category: 'Olahraga'
-        },
-    ],
-    ekonomi: [
-        {
-          id: 3,
-          title: 'Pemerintah Luncurkan Proyek Infrastruktur Terbesar Abad Ini',
-          description: 'Proyek pembangunan jalan tol trans-nusantara diharapkan dapat memacu pertumbuhan ekonomi dan menghubungkan daerah-daerah terpencil.',
-          imageUrl: 'https://awsimages.detik.net.id/community/media/visual/2024/05/07/progres-pembangunan-seksi-satu-ruas-tol-sibanceh-1_169.jpeg?w=1200',
-          author: 'Citra Lestari',
-          category: 'Ekonomi'
-        },
-    ]
-};
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Newspaper, ChevronRight } from 'lucide-react';
+
+const API_URL = 'http://localhost:5000/api';
 
 const NewsCard = ({ item }) => {
     return (
@@ -41,21 +12,21 @@ const NewsCard = ({ item }) => {
             <div className="overflow-hidden">
                 <img
                     className="w-full h-52 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    src={item.imageUrl}
+                    src={item.imageUrl || 'https://placehold.co/400x200'}
                     alt={item.title}
                 />
             </div>
             <div className="p-5 flex flex-col flex-grow">
                 <div className="flex-grow">
                     <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-4 bg-indigo-100 text-indigo-800">
-                        {item.category}
+                        {item.category?.name || 'Tanpa Kategori'}
                     </span>
                     <h3 className="text-xl font-bold text-zinc-800 mb-2">{item.title}</h3>
-                    <p className="text-zinc-600 text-sm leading-relaxed mb-4">{item.description}</p>
+                    <p className="text-zinc-600 text-sm leading-relaxed mb-4">{item.content?.substring(0, 100) + '...' || 'Deskripsi tidak tersedia'}</p>
                 </div>
                 <div className="mt-auto pt-4 border-t border-zinc-100">
                     <p className="text-sm text-zinc-600 mb-4">
-                        Oleh: <span className="font-medium">{item.author}</span>
+                        Oleh: <span className="font-medium">{item.author?.name || 'Tanpa Penulis'}</span>
                     </p>
                     <Link
                         to={`/berita/${item.id}`}
@@ -70,10 +41,27 @@ const NewsCard = ({ item }) => {
 }
 
 export default function BeritaPage() {
-    const [activeCategory, setActiveCategory] = useState('teknologi');
+    const [allNews, setAllNews] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const allNews = Object.values(beritaData).flat();
-    const activeItems = beritaData[activeCategory];
+    useEffect(() => {
+        const fetchAllNews = async () => {
+            try {
+                const response = await fetch(`${API_URL}/berita`);
+                const data = await response.json();
+                setAllNews(data);
+            } catch (error) {
+                console.error("Gagal mengambil semua berita:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAllNews();
+    }, []);
+
+    if (loading) {
+        return <div className="text-center py-20">Memuat semua berita...</div>;
+    }
 
     return (
         <div className="bg-zinc-50 font-sans">
@@ -93,11 +81,15 @@ export default function BeritaPage() {
             </div>
 
             <main className="container mx-auto px-6 py-16 md:py-20">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    {allNews.map(item => (
-                        <NewsCard key={item.id} item={item} />
-                    ))}
-                </div>
+                {allNews.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        {allNews.map(item => (
+                            <NewsCard key={item.id} item={item} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-500">Belum ada berita yang dipublikasikan.</p>
+                )}
             </main>
         </div>
     );

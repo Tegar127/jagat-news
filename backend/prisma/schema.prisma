@@ -1,4 +1,4 @@
-// File: backend/prisma/schema.prisma
+// backend/prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -21,7 +21,10 @@ model User {
 model Post {
   id          Int       @id @default(autoincrement())
   title       String
+  content     String?   // Tambahkan ini untuk isi berita lengkap
+  imageUrl    String?   // Tambahkan ini untuk URL gambar
   status      Status    @default(DRAFT)
+  publishedAt DateTime  @default(now()) // Tambahkan ini
   author      User      @relation(fields: [authorId], references: [id])
   authorId    Int
   category    Category? @relation(fields: [categoryId], references: [id])

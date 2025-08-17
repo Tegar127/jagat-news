@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react'; // Tambahkan useEffect
+// src/components/Admin/BeritaAdminPage.jsx
+
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Search, Edit, Trash2 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api'; // Definisikan URL base API
+const API_URL = 'http://localhost:5000/api';
 
 const BeritaAdminPage = () => {
-    const [newsData, setNewsData] = useState([]); // Awalnya data kosong
+    const [newsData, setNewsData] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', author: '', status: 'DRAFT' });
+    const [currentNews, setCurrentNews] = useState({ id: null, title: '', category: '', author: '', status: 'DRAFT', imageUrl: '', content: '' });
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Fungsi untuk mengambil data dari server
     const fetchNews = async () => {
         const response = await fetch(`${API_URL}/berita`);
         const data = await response.json();
-        // Format data agar sesuai dengan state frontend
         const formattedData = data.map(news => ({
             ...news,
-            author: news.author.name,
-            category: news.category.name,
+            author: news.author ? news.author.name : 'N/A',
+            category: news.category ? news.category.name : 'N/A',
         }));
         setNewsData(formattedData);
     };
 
-    // useEffect akan berjalan sekali saat komponen pertama kali dimuat
     useEffect(() => {
         fetchNews();
     }, []);
@@ -33,7 +32,7 @@ const BeritaAdminPage = () => {
     };
 
     const handleAddNew = () => {
-        setCurrentNews({ id: null, title: '', category: '', author: '', status: 'DRAFT' });
+        setCurrentNews({ id: null, title: '', category: '', author: '', status: 'DRAFT', imageUrl: '', content: '' });
         setIsFormVisible(true);
     };
 
@@ -47,20 +46,23 @@ const BeritaAdminPage = () => {
         const method = currentNews.id ? 'PUT' : 'POST';
         const url = currentNews.id ? `${API_URL}/berita/${currentNews.id}` : `${API_URL}/berita`;
 
+        // Ambil author dari data yang ada jika mengedit, karena tidak ada di form
+        const authorToSubmit = currentNews.author || "Admin";
+
         await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentNews),
+            body: JSON.stringify({ ...currentNews, author: authorToSubmit }),
         });
 
-        fetchNews(); // Ambil data terbaru setelah submit
+        fetchNews();
         setIsFormVisible(false);
     };
 
     const handleDelete = async (id) => {
         if (window.confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
             await fetch(`${API_URL}/berita/${id}`, { method: 'DELETE' });
-            fetchNews(); // Ambil data terbaru setelah hapus
+            fetchNews();
         }
     };
     
@@ -90,19 +92,21 @@ const BeritaAdminPage = () => {
                             <label className="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
                             <input type="text" name="category" value={currentNews.category} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
                         </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2">Penulis</label>
-                            <input type="text" name="author" value={currentNews.author} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
+                         <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">URL Gambar</label>
+                            <input type="text" name="imageUrl" value={currentNews.imageUrl} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" placeholder="https://..."/>
                         </div>
                          <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
-                                <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
-                                    {/* Ubah nilai value menjadi huruf besar */}
-                                    <option value="PUBLISHED">Published</option>
-                                    <option value="DRAFT">Draft</option>
-                                </select>
-                            </div>
-
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Isi Berita</label>
+                            <textarea name="content" value={currentNews.content} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" rows="5"></textarea>
+                        </div>
+                         <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                            <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
+                                <option value="PUBLISHED">Published</option>
+                                <option value="DRAFT">Draft</option>
+                            </select>
+                        </div>
                         <div className="flex justify-end gap-4">
                             <button type="button" onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg">Batal</button>
                             <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">{currentNews.id ? 'Simpan Perubahan' : 'Simpan'}</button>
@@ -136,7 +140,7 @@ const BeritaAdminPage = () => {
                                     <td className="py-3 px-4">{news.category}</td>
                                     <td className="py-3 px-4">{news.author}</td>
                                     <td className="py-3 px-4">
-                                        <span className={`px-2 py-1 text-xs rounded-full ${news.status === 'Published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                        <span className={`px-2 py-1 text-xs rounded-full ${news.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                                             {news.status}
                                         </span>
                                     </td>

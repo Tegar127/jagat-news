@@ -1,62 +1,18 @@
-// File: src/pages/HomePage.jsx
+// src/pages/HomePage.jsx
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageSquare, Star, Cpu, Briefcase, Scale, Send, Paperclip, ShoppingBag, Download, Link as LinkIcon, Printer, Headset, Newspaper, TrendingUp, Globe, X } from 'lucide-react';
+import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-// === MOCK DATA ===
+const API_URL = 'http://localhost:5000/api';
+
+// === MOCK DATA (HANYA UNTUK PROMO & KATEGORI) ===
 const promoSlides = [
   { id: 1, title: "Sorotan Utama Hari Ini", subtitle: "Perkembangan terbaru dalam dunia teknologi dan politik global.", buttonText: "Baca Selengkapnya", imageUrl: "https://placehold.co/800x400/3B82F6/FFFFFF?text=Berita+Utama" },
   { id: 2, title: "Analisis Mendalam", subtitle: "Kupas tuntas isu-isu terkini bersama para ahli di bidangnya.", buttonText: "Lihat Analisis", imageUrl: "https://placehold.co/800x400/10B981/FFFFFF?text=Analisis+Ahli" },
   { id: 3, title: "Liputan Khusus Olahraga", subtitle: "Jangan lewatkan momen-momen terbaik dari dunia olahraga.", buttonText: "Jelajahi Sekarang", imageUrl: "https://placehold.co/800x400/F59E0B/FFFFFF?text=Liputan+Olahraga" }
-];
-const featuredNews = [
-    {
-      id: 1,
-      title: "Revolusi AI Generatif: Dampaknya pada Industri Kreatif",
-      author: "Andi Wijaya",
-      publisher: "Jagat News Teknologi",
-      rating: 4.8,
-      comments: 128,
-      imageUrl: "https://images.unsplash.com/photo-1531746790731-6c087fecd65a?q=80&w=2070&auto=format&fit=crop",
-      category: "Teknologi",
-      abstract: "Kecerdasan buatan generatif telah mengubah lanskap industri kreatif, mulai dari penulisan hingga desain grafis. Artikel ini membahas potensi dan tantangan yang dihadapi para profesional di era baru ini."
-    },
-    {
-      id: 2,
-      title: "Timnas Garuda Lolos ke Babak Final Piala Asia",
-      author: "Budi Santoso",
-      publisher: "Jagat News Olahraga",
-      rating: 4.9,
-      comments: 345,
-      imageUrl: "https://asset.kompas.id/S6M6su24yO6U5D3uWDLcc9_i7qo=/1024x683/https%3A%2F%2Fasset.kgnewsroom.com%2Fphoto%2Fpre%2F2022%2F12%2F07%2F0e98f6ff-1e8d-46d3-b504-ecce96de9787_jpg.jpg",
-      category: "Olahraga",
-      abstract: "Sebuah kemenangan dramatis melawan tim unggulan membawa Timnas Garuda selangkah lebih dekat menuju gelar juara. Euforia melanda seluruh negeri menyambut pencapaian bersejarah ini."
-    },
-    {
-      id: 3,
-      title: "Pemerintah Luncurkan Proyek Infrastruktur Terbesar Abad Ini",
-      author: "Citra Lestari",
-      publisher: "Jagat News Ekonomi",
-      rating: 4.7,
-      comments: 210,
-      imageUrl: "https://awsimages.detik.net.id/community/media/visual/2024/05/07/progres-pembangunan-seksi-satu-ruas-tol-sibanceh-1_169.jpeg?w=1200",
-      category: "Ekonomi",
-      abstract: "Proyek pembangunan jalan tol trans-nusantara diharapkan dapat memacu pertumbuhan ekonomi dan menghubungkan daerah-daerah terpencil, membuka peluang baru bagi masyarakat."
-    },
-    {
-      id: 4,
-      title: "KTT Global: Para Pemimpin Dunia Bahas Perubahan Iklim",
-      author: "Rahmat Hidayat",
-      publisher: "Jagat News Internasional",
-      rating: 4.6,
-      comments: 189,
-      imageUrl: "https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=2070&auto=format&fit=crop",
-      category: "Internasional",
-      abstract: "Para pemimpin dari seluruh dunia berkumpul untuk merumuskan langkah-langkah konkret dalam mengatasi krisis iklim. Kesepakatan baru diharapkan tercapai dalam pertemuan tingkat tinggi ini."
-    },
 ];
 
 const categories = [
@@ -67,9 +23,7 @@ const categories = [
     { name: "Internasional", icon: <Globe className="w-8 h-8" />, color: "text-indigo-500", hoverBg: "hover:bg-indigo-100", href: '/berita?kategori=internasional' },
 ];
 
-
 // === CHILD COMPONENTS ===
-
 const NewsCard = ({ news, index }) => (
     <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl flex flex-col border border-gray-200/80"
         data-aos="fade-up"
@@ -78,16 +32,16 @@ const NewsCard = ({ news, index }) => (
         data-aos-once="true"
     >
         <div className="relative">
-            <img className="w-full h-48 object-cover" src={news.imageUrl} alt={`Cover Berita ${news.title}`} />
-            <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category}</div>
+            <img className="w-full h-48 object-cover" src={news.imageUrl || 'https://placehold.co/400x200'} alt={`Cover Berita ${news.title}`} />
+            <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
         </div>
         <div className="p-4 flex flex-col flex-grow">
-            <p className="text-sm font-semibold text-blue-700 mb-1">{news.publisher}</p>
+            <p className="text-sm font-semibold text-blue-700 mb-1">{news.author?.name || 'Jagat News'}</p>
             <h3 className="text-lg font-bold text-gray-900 mb-2 h-14 overflow-hidden">{news.title}</h3>
-            <p className="text-sm text-gray-600 mb-4 flex-grow">{news.author}</p>
+            <p className="text-sm text-gray-600 mb-4 flex-grow">{news.author?.name || 'Tanpa Penulis'}</p>
             <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                <div className="flex items-center gap-1"><Star className="w-5 h-5 text-yellow-400 fill-current" /><span className="text-gray-800 font-bold">{news.rating}</span></div>
-                <div className="text-sm text-gray-500"><span className="font-medium text-gray-700">{news.comments}</span> komentar</div>
+                <div className="flex items-center gap-1"><Star className="w-5 h-5 text-yellow-400 fill-current" /><span className="text-gray-800 font-bold">4.8</span></div>
+                <div className="text-sm text-gray-500"><span className="font-medium text-gray-700">128</span> komentar</div>
             </div>
         </div>
         <div className="p-3 bg-gray-50 border-t border-gray-200/80">
@@ -98,8 +52,8 @@ const NewsCard = ({ news, index }) => (
 
 
 // === SECTIONS ===
-
 const PromoBannerSection = () => {
+    // ... (Komponen ini tidak berubah, masih menggunakan data statis)
     const [currentIndex, setCurrentIndex] = useState(0);
     const nextSlide = useCallback(() => { setCurrentIndex(prev => (prev === promoSlides.length - 1 ? 0 : prev + 1)); }, []);
     useEffect(() => { const timer = setInterval(nextSlide, 5000); return () => clearInterval(timer); }, [nextSlide]);
@@ -128,6 +82,7 @@ const PromoBannerSection = () => {
 };
 
 const CategorySection = () => (
+    // ... (Komponen ini tidak berubah, masih menggunakan data statis)
     <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-4" data-aos="fade-down" data-aos-duration="800" data-aos-once="true">
@@ -160,26 +115,47 @@ const CategorySection = () => (
 );
 
 const FeaturedNewsSection = () => {
+    const [featuredNews, setFeaturedNews] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchFeaturedNews = async () => {
+            try {
+                const response = await fetch(`${API_URL}/berita`);
+                const data = await response.json();
+                setFeaturedNews(data.slice(0, 4)); // Ambil 4 berita teratas
+            } catch (error) {
+                console.error("Gagal mengambil berita unggulan:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFeaturedNews();
+    }, []);
+
+    if (loading) return <div className="text-center py-10">Memuat berita unggulan...</div>;
+
     return (
         <section id="featured" className="py-16 bg-gray-50">
             <div className="container mx-auto px-4">
                 <h2 className="text-3xl font-bold text-center text-gray-800 mb-12" data-aos="fade-down" data-aos-duration="800" data-aos-once="true">
                     Berita Unggulan
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">{featuredNews.map((j, index) => (
-                    <NewsCard key={j.id} news={j} index={index} />
-                ))}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {featuredNews.map((news, index) => (
+                        <NewsCard key={news.id} news={news} index={index} />
+                    ))}
+                </div>
                  <div className="mt-12 text-center">
-                    <a href="/berita" className="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full shadow-md border border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
+                    <Link to="/berita" className="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full shadow-md border border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all duration-200"
                         data-aos="fade-up" data-aos-duration="800" data-aos-delay="200" data-aos-once="true">
                         Lihat Semua Berita
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>
     );
 };
-
 
 // === MAIN HOMEPAGE COMPONENT ===
 export default function HomePage() {

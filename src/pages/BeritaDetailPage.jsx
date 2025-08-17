@@ -1,7 +1,10 @@
-import React from 'react';
+// src/pages/BeritaDetailPage.jsx
+
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom'; 
-import { User, Calendar, Tag, ArrowLeft } from 'lucide-react';
-import { beritaData } from './BeritaPage';
+import { User, Calendar, ArrowLeft } from 'lucide-react';
+
+const API_URL = 'http://localhost:5000/api';
 
 const InfoTag = ({ icon, text }) => (
     <div className="flex items-center text-sm text-zinc-600">
@@ -10,22 +13,41 @@ const InfoTag = ({ icon, text }) => (
     </div>
 );
 
-const findNewsById = (id) => {
-    for (const categoryKey in beritaData) {
-        const news = beritaData[categoryKey].find(p => p.id === parseInt(id));
-        if (news) {
-            return news;
-        }
-    }
-    return null;
-};
-
 export default function BeritaDetailPage() {
     const { id } = useParams();
-    const news = findNewsById(id);
+    const [news, setNews] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Selalu scroll ke atas saat halaman dimuat
+        const fetchNewsDetail = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`${API_URL}/berita/${id}`);
+                if (!response.ok) {
+                    setNews(null); // Set berita jadi null jika tidak ditemukan
+                } else {
+                    const data = await response.json();
+                    setNews(data);
+                }
+            } catch (error) {
+                console.error("Gagal mengambil detail berita:", error);
+                setNews(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchNewsDetail();
+    }, [id]);
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">Memuat Berita...</div>;
+    }
 
     if (!news) {
-        return <Navigate to="/berita" />;
+        // Arahkan ke halaman 404 jika berita tidak ditemukan setelah loading selesai
+        return <Navigate to="/404" replace />;
     }
 
     return (
@@ -40,22 +62,19 @@ export default function BeritaDetailPage() {
 
                 <div className="max-w-4xl mx-auto">
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-zinc-200">
-                       <img src={news.imageUrl} alt={news.title} className="w-full h-auto md:h-[450px] object-cover" />
+                       <img src={news.imageUrl || 'https://placehold.co/800x450'} alt={news.title} className="w-full h-auto md:h-[450px] object-cover" />
                        <div className="p-8">
                             <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-800">
-                                {news.category}
+                                {news.category?.name || 'Tanpa Kategori'}
                             </span>
                             <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 tracking-tight">{news.title}</h1>
                             
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-6 border-y border-zinc-200 py-4">
-                               <InfoTag icon={<User className="w-4 h-4 text-zinc-500" />} text={news.author} />
-                               <InfoTag icon={<Calendar className="w-4 h-4 text-zinc-500" />} text="17 Agustus 2024" />
+                               <InfoTag icon={<User className="w-4 h-4 text-zinc-500" />} text={news.author?.name || 'Admin'} />
+                               <InfoTag icon={<Calendar className="w-4 h-4 text-zinc-500" />} text={new Date(news.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })} />
                             </div>
 
-                            <div className="mt-6 prose lg:prose-xl max-w-none">
-                                <p>{news.description}</p>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. </p>
-                                <p>Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor.</p>
+                            <div className="mt-6 prose lg:prose-xl max-w-none text-gray-800" dangerouslySetInnerHTML={{ __html: news.content?.replace(/\n/g, '<br />') || 'Konten tidak tersedia.' }}>
                             </div>
                        </div>
                     </div>
