@@ -4,31 +4,53 @@ import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
+const API_URL = 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    // Coba ambil data user dari localStorage saat pertama kali load
+    const [user, setUser] = useState(() => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch {
+            return null;
+        }
+    });
     const navigate = useNavigate();
 
-    // Simulasikan data user dari database
-    const MOCK_USERS = {
-        'admin@jagat.news': { name: 'Admin Jagat', role: 'ADMINISTRATOR', password: 'password123' },
-        'admin2@jagat.news': { name: 'Admin Kedua', role: 'ADMIN', password: 'password123' },
-    };
-
     const login = async (email, password) => {
-        const userData = MOCK_USERS[email];
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (userData && userData.password === password) {
-            // Simpan data user (tanpa password) ke state
-            setUser({ name: userData.name, role: userData.role });
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Jika login gagal, lempar error dengan pesan dari server
+                throw new Error(data.error || 'Gagal untuk login.');
+            }
+            
+            // Jika berhasil, simpan data user ke state dan localStorage
+            setUser(data);
+            localStorage.setItem('user', JSON.stringify(data));
+            
             navigate('/admin/dashboard');
-        } else {
-            throw new Error('Email atau password salah.');
+
+        } catch (error) {
+            console.error('Login failed:', error);
+            // Lempar kembali error agar bisa ditangkap di halaman login
+            throw error;
         }
     };
 
     const logout = () => {
         setUser(null);
+        localStorage.removeItem('user'); // Hapus data dari localStorage saat logout
         navigate('/login');
     };
 
