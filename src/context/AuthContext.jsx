@@ -15,10 +15,24 @@ export const AuthProvider = ({ children }) => {
     });
     const navigate = useNavigate();
 
+    // State baru untuk modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalType, setModalType] = useState('login'); // 'login' or 'register'
+
+    const openModal = (type = 'login') => {
+        setModalType(type);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+
     const handleLoginSuccess = (userData) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        // Arahkan ke dasbor jika admin, atau ke beranda jika user biasa
+        closeModal(); // Tutup modal setelah berhasil login
         if (userData.role === 'ADMIN' || userData.role === 'ADMINISTRATOR') {
             navigate('/admin/dashboard');
         } else {
@@ -54,7 +68,18 @@ export const AuthProvider = ({ children }) => {
         navigate('/login');
     };
 
-    const value = { user, login, logout, loginWithGoogle, isAuthenticated: !!user };
+    const value = { 
+        user, 
+        login, 
+        logout, 
+        loginWithGoogle, 
+        isAuthenticated: !!user,
+        // Tambahkan state dan fungsi modal ke context value
+        isModalOpen,
+        modalType,
+        openModal,
+        closeModal
+    };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

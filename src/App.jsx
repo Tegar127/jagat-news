@@ -10,7 +10,7 @@ import HomePage from './pages/HomePage';
 import BeritaPage from './pages/BeritaPage';
 import BeritaDetailPage from './pages/BeritaDetailPage';
 import AboutPage from './pages/AboutPage';
-import { LoginPage, DaftarPage } from './pages/LoginPage';
+import LoginModal from './components/LoginModal'; // <-- Impor komponen modal baru
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -18,7 +18,7 @@ import DashboardPage from './components/Admin/DashboardPage';
 import BeritaAdminPage from './components/Admin/BeritaAdminPage';
 import KategoriAdminPage from './components/Admin/KategoriAdminPage';
 import UserAdminPage from './components/Admin/UserAdminPage';
-import PromoAdminPage from './components/Admin/PromoAdminPage'; // <-- Impor halaman promo baru
+import PromoAdminPage from './components/Admin/PromoAdminPage';
 
 // Impor dari Context dan Protected Route
 import { AuthProvider } from './context/AuthContext';
@@ -38,9 +38,10 @@ const PublicLayout = () => (
     <div className="bg-white font-sans antialiased flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
-            <Outlet /> {/* Rute anak seperti HomePage, AboutPage, dll. akan dirender di sini */}
+            <Outlet />
         </main>
         <Footer />
+        <LoginModal /> {/* <-- Tambahkan modal di sini */}
     </div>
 );
 
@@ -57,9 +58,9 @@ const AppContent = () => {
                 <Route path="/tentang" element={<AboutPage />} />
             </Route>
 
-            {/* Rute yang tidak menggunakan layout (Login & Daftar) */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/daftar" element={<DaftarPage />} />
+            {/* HAPUS Rute yang tidak menggunakan layout (Login & Daftar) */}
+            {/* <Route path="/login" element={<LoginPage />} /> */}
+            {/* <Route path="/daftar" element={<DaftarPage />} /> */}
 
             {/* Rute admin yang dilindungi dan menggunakan AdminLayout */}
             <Route
@@ -70,16 +71,14 @@ const AppContent = () => {
                     </ProtectedRoute>
                 }
             >
-                {/* Rute anak dari /admin. Ini yang akan dirender oleh <Outlet/> */}
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="promo" element={<PromoAdminPage />} /> {/* <-- Tambahkan route ini */}
+                <Route path="promo" element={<PromoAdminPage />} />
                 <Route path="berita" element={<BeritaAdminPage />} />
                 <Route path="kategori" element={<KategoriAdminPage />} />
                 <Route path="users" element={<UserAdminPage />} />
             </Route>
             
-            {/* Rute untuk halaman tidak ditemukan (404) */}
             <Route path="*" element={
                 <div className="text-center py-20">
                     <h1 className="text-4xl font-bold">404</h1>

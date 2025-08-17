@@ -1,14 +1,14 @@
-// File: src/components/Navbar.jsx
+// src/components/Navbar.jsx
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Menu, X, Newspaper, UserCircle, LogOut, User } from 'lucide-react';
-import { useAuth } from '../context/AuthContext'; // Impor useAuth
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-    const { user, logout } = useAuth(); // Dapatkan status pengguna dan fungsi logout
+    const { user, logout, openModal } = useAuth(); // Ambil fungsi openModal
 
     const handleLogout = () => {
         logout();
@@ -37,17 +37,18 @@ const Navbar = () => {
 
     const renderAuthButtons = () => (
         <>
-            <a href="/login" className="px-5 py-2 rounded-full font-bold text-sm border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors">
+            <button onClick={() => openModal('login')} className="px-5 py-2 rounded-full font-bold text-sm border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors">
                 Masuk
-            </a>
-            <a href="/daftar" className="px-5 py-2 rounded-full font-bold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+            </button>
+            <button onClick={() => openModal('register')} className="px-5 py-2 rounded-full font-bold text-sm bg-blue-500 text-white hover:bg-blue-600 transition-colors">
                 Daftar
-            </a>
+            </button>
         </>
     );
 
     return (
         <header className="bg-white shadow-sm sticky top-0 z-50">
+            {/* ... (sisa kode tidak berubah) ... */}
             <div className="container mx-auto px-4">
                 {/* Desktop Header */}
                 <div className="hidden lg:flex items-center justify-between py-4">
@@ -99,12 +100,12 @@ const Navbar = () => {
                         <Link to="/kontak" className="text-gray-700 font-medium p-3 rounded-md hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Kontak</Link>
                         {!user && (
                             <div className="pt-4 mt-4 border-t border-gray-200 flex gap-4">
-                                <a href="/login" className="flex-1 text-center px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-300 text-gray-700 hover:bg-gray-100">
+                                <button onClick={() => { openModal('login'); setIsMenuOpen(false); }} className="flex-1 text-center px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-300 text-gray-700 hover:bg-gray-100">
                                     Masuk
-                                </a>
-                                <a href="/daftar" className="flex-1 text-center px-5 py-2.5 rounded-lg font-bold text-sm bg-blue-500 text-white hover:bg-blue-600">
+                                </button>
+                                <button onClick={() => { openModal('register'); setIsMenuOpen(false); }} className="flex-1 text-center px-5 py-2.5 rounded-lg font-bold text-sm bg-blue-500 text-white hover:bg-blue-600">
                                     Daftar
-                                </a>
+                                </button>
                             </div>
                         )}
                     </nav>
