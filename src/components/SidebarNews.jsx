@@ -40,7 +40,7 @@ const SidebarNews = ({ title, news, loading, showRanking = false }) => {
                             </div>
                         )}
                         <img 
-                            src={item.imageUrl || 'https://placehold.co/100x100?text=Jagat'} 
+                            src={(item.images && item.images.length > 0) ? item.images[0].url : 'https://placehold.co/100x100?text=Jagat'} 
                             alt={item.title}
                             className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                         />

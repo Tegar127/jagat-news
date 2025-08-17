@@ -1,8 +1,8 @@
 // src/pages/BeritaDetailPage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom'; 
-import { User, Calendar, ArrowLeft } from 'lucide-react';
+import { useParams, Link, Navigate } from 'react-router-dom';
+import { User, Calendar, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -13,19 +13,66 @@ const InfoTag = ({ icon, text }) => (
     </div>
 );
 
+// Komponen baru untuk galeri gambar
+const ImageGallery = ({ images }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Jika tidak ada gambar, tampilkan placeholder
+    if (!images || images.length === 0) {
+        return <img src="https://placehold.co/800x450" alt="Placeholder" className="w-full h-auto md:h-[450px] object-cover" />;
+    }
+
+    const goToPrevious = () => {
+        const isFirstSlide = currentIndex === 0;
+        const newIndex = isFirstSlide ? images.length - 1 : currentIndex - 1;
+        setCurrentIndex(newIndex);
+    };
+
+    const goToNext = () => {
+        const isLastSlide = currentIndex === images.length - 1;
+        const newIndex = isLastSlide ? 0 : currentIndex + 1;
+        setCurrentIndex(newIndex);
+    };
+
+    return (
+        <div className="relative w-full h-auto md:h-[450px] overflow-hidden bg-gray-200">
+            {/* Tampilkan gambar saat ini */}
+            <img src={images[currentIndex].url} alt={`Gambar berita ${currentIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500" />
+            
+            {/* Tampilkan tombol navigasi hanya jika gambar lebih dari 1 */}
+            {images.length > 1 && (
+                <>
+                    <button onClick={goToPrevious} className="absolute top-1/2 left-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/75 transition-colors focus:outline-none">
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button onClick={goToNext} className="absolute top-1/2 right-4 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/75 transition-colors focus:outline-none">
+                        <ChevronRight size={24} />
+                    </button>
+                    {/* Indikator slide */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {images.map((_, index) => (
+                            <div key={index} className={`w-3 h-3 rounded-full transition-all ${index === currentIndex ? 'bg-white' : 'bg-white/50'}`}></div>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
 export default function BeritaDetailPage() {
     const { id } = useParams();
     const [news, setNews] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        window.scrollTo(0, 0); // Selalu scroll ke atas saat halaman dimuat
+        window.scrollTo(0, 0);
         const fetchNewsDetail = async () => {
             setLoading(true);
             try {
                 const response = await fetch(`${API_URL}/berita/${id}`);
                 if (!response.ok) {
-                    setNews(null); // Set berita jadi null jika tidak ditemukan
+                    setNews(null);
                 } else {
                     const data = await response.json();
                     setNews(data);
@@ -46,7 +93,6 @@ export default function BeritaDetailPage() {
     }
 
     if (!news) {
-        // Arahkan ke halaman 404 jika berita tidak ditemukan setelah loading selesai
         return <Navigate to="/404" replace />;
     }
 
@@ -64,7 +110,9 @@ export default function BeritaDetailPage() {
 
                 <div className="max-w-4xl mx-auto">
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-zinc-200">
-                       <img src={news.imageUrl || 'https://placehold.co/800x450'} alt={news.title} className="w-full h-auto md:h-[450px] object-cover" />
+                       {/* Gunakan komponen ImageGallery di sini */}
+                       <ImageGallery images={news.images} />
+
                        <div className="p-8">
                             <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-800">
                                 {news.category?.name || 'Tanpa Kategori'}

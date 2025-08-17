@@ -12,7 +12,7 @@ const NewsCard = ({ item }) => {
             <div className="overflow-hidden">
                 <img
                     className="w-full h-52 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    src={item.imageUrl || 'https://placehold.co/400x200'}
+                    src={(item.images && item.images.length > 0) ? item.images[0].url : 'https://placehold.co/400x200'}
                     alt={item.title}
                 />
             </div>

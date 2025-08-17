@@ -28,7 +28,11 @@ const NewsCard = ({ news, index }) => (
         data-aos-once="true"
     >
         <div className="relative overflow-hidden">
-            <img className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" src={news.imageUrl || 'https://placehold.co/400x200?text=Jagat+News'} alt={`Cover Berita ${news.title}`} />
+            <img 
+                className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" 
+                src={(news.images && news.images.length > 0) ? news.images[0].url : 'https://placehold.co/400x200?text=Jagat+News'} 
+                alt={`Cover Berita ${news.title}`} 
+            />
             <div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
         </div>
         <div className="p-5 flex flex-col flex-grow">
