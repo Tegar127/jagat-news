@@ -6,7 +6,12 @@ import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone } from 'lu
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
-    const { user, logout } = useAuth(); // Ambil data user dari context
+    const { user, logout } = useAuth(); // Ambil data user dan fungsi logout
+
+    const handleLogout = () => {
+        // Cukup panggil fungsi logout, karena sudah menangani navigasi
+        logout();
+    };
 
     const navLinks = [
         { to: "/admin/dashboard", icon: <LayoutDashboard size={20} />, text: "Dashboard", roles: ['ADMIN', 'ADMINISTRATOR'] },
@@ -48,7 +53,7 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                         ))}
                     </div>
                     <div>
-                        <button onClick={logout} className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg">
+                        <button onClick={handleLogout} className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-200 rounded-lg">
                             <LogOut size={20} />
                             <span className="ml-3 font-medium">Keluar</span>
                         </button>

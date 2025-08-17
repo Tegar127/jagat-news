@@ -33,11 +33,8 @@ export const AuthProvider = ({ children }) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         closeModal(); // Tutup modal setelah berhasil login
-        if (userData.role === 'ADMIN' || userData.role === 'ADMINISTRATOR') {
-            navigate('/admin/dashboard');
-        } else {
-            navigate('/');
-        }
+        // SEMUA PENGGUNA DIARAHKAN KE HALAMAN UTAMA SETELAH LOGIN
+        navigate('/');
     };
 
     const login = async (email, password) => {
@@ -65,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
-        navigate('/login');
+        navigate('/'); // DIARAHKAN KE HOME SETELAH LOGOUT
     };
 
     const value = { 

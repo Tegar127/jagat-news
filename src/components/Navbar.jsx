@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Menu, X, Newspaper, UserCircle, LogOut, User } from 'lucide-react';
+import { Search, Menu, X, Newspaper, UserCircle, LogOut, User, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-    const { user, logout, openModal } = useAuth(); // Ambil fungsi openModal
+    const { user, logout, openModal } = useAuth();
 
     const handleLogout = () => {
         logout();
@@ -22,6 +22,13 @@ const Navbar = () => {
             </button>
             {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
+                    {/* Tampilkan menu Dashboard jika role-nya ADMIN atau ADMINISTRATOR */}
+                    {(user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR') && (
+                        <Link to="/admin/dashboard" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                            <LayoutDashboard className="w-4 h-4 mr-2" />
+                            Dashboard
+                        </Link>
+                    )}
                     <Link to="/profil" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
                         <User className="w-4 h-4 mr-2" />
                         Kelola Profil
