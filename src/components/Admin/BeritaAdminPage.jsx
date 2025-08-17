@@ -79,7 +79,7 @@ const Toolbar = () => {
             <button type="button" onMouseDown={e => { e.preventDefault(); toggleMark(editor, 'bold'); }} className={`p-2 rounded ${isMarkActive(editor, 'bold') ? 'bg-gray-200' : 'bg-white'}`}><Bold size={16} /></button>
             <button type="button" onMouseDown={e => { e.preventDefault(); toggleMark(editor, 'italic'); }} className={`p-2 rounded ${isMarkActive(editor, 'italic') ? 'bg-gray-200' : 'bg-white'}`}><Italic size={16} /></button>
             <button type="button" onMouseDown={e => { e.preventDefault(); toggleMark(editor, 'underline'); }} className={`p-2 rounded ${isMarkActive(editor, 'underline') ? 'bg-gray-200' : 'bg-white'}`}><Underline size={16} /></button>
-            
+
             <div className="border-l mx-2"></div>
 
             {/* Block Buttons */}
@@ -113,59 +113,75 @@ const BeritaAdminPage = () => {
     const renderLeaf = useCallback(props => <Leaf {...props} />, []);
     const renderElement = useCallback(props => <Element {...props} />, []);
     
-    // Function to deserialize HTML to Slate nodes
+    // Function to deserialize HTML to Slate nodes (IMPROVED)
     const deserialize = (htmlString) => {
         if (!htmlString) return initialValue;
+
         const doc = new DOMParser().parseFromString(htmlString, 'text/html');
         if (!doc.body.hasChildNodes()) return initialValue;
+    
+        const slateNodes = Array.from(doc.body.childNodes).map(node => domNodeToSlate(node)).filter(Boolean);
 
-        const parseNode = (el) => {
-            if (el.nodeType === 3) return { text: el.textContent };
-            if (el.nodeType !== 1) return null;
-
-            const children = Array.from(el.childNodes).map(parseNode).filter(Boolean);
-            if (children.length === 0) children.push({ text: '' }); // Ensure element has children
-
-            let node = {};
-            if (el.nodeName === 'STRONG') node.bold = true;
-            if (el.nodeName === 'EM') node.italic = true;
-            if (el.nodeName === 'U') node.underline = true;
-            
-            // This is a simplified version, it merges text with marks
-            if (Object.keys(node).length > 0) {
-                 return children.map(child => ({ ...child, ...node }));
-            }
-            
-            switch (el.nodeName) {
-                case 'BODY': return children;
-                case 'P': return { type: 'paragraph', align: el.style.textAlign || 'left', children };
-                default: return { type: 'paragraph', align: 'left', children };
-            }
-        };
-
-        const result = parseNode(doc.body);
-        return Array.isArray(result) && result.length > 0 ? result : initialValue;
+        return slateNodes.length > 0 ? slateNodes : initialValue;
     };
     
-    // Function to serialize Slate nodes to HTML
-    const serialize = nodes => {
-        return nodes.map(n => {
-            if (Text.isText(n)) {
-                let string = n.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                if (n.bold) string = `<strong>${string}</strong>`;
-                if (n.italic) string = `<em>${string}</em>`;
-                if (n.underline) string = `<u>${string}</u>`;
-                return string;
+    const domNodeToSlate = (node) => {
+        if (node.nodeType === 3) { // Text node
+            return { text: node.textContent };
+        }
+        if (node.nodeType !== 1) { // Not an element node
+            return null;
+        }
+
+        const element = node;
+        let children = Array.from(element.childNodes).map(domNodeToSlate).flat().filter(Boolean);
+        if (children.length === 0) {
+            children = [{ text: '' }];
+        }
+
+        switch (element.nodeName) {
+            case 'P':
+                return { type: 'paragraph', align: element.style.textAlign || 'left', children };
+            case 'STRONG':
+                return children.map(child => ({ ...child, bold: true }));
+            case 'EM':
+                return children.map(child => ({ ...child, italic: true }));
+            case 'U':
+                return children.map(child => ({ ...child, underline: true }));
+            case 'BODY': // Unlikely to be hit with childNodes, but good practice
+                 return { type: 'paragraph', align: 'left', children };
+            default: // Treat unknown tags as paragraphs
+                 return { type: 'paragraph', align: 'left', children };
+        }
+    };
+    
+    // Function to serialize Slate nodes to HTML (IMPROVED)
+    const serialize = (nodes) => {
+        return nodes.map(node => {
+            if (Text.isText(node)) {
+                let html = node.text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                if (node.bold) html = `<strong>${html}</strong>`;
+                if (node.italic) html = `<em>${html}</em>`;
+                if (node.underline) html = `<u>${html}</u>`;
+                return html;
             }
-            const children = n.children.map(c => serialize([c])).join('');
-            switch (n.type) {
+
+            if (!node.children) return '';
+
+            const childrenHtml = serialize(node.children);
+
+            switch (node.type) {
                 case 'paragraph':
-                    return `<p style="text-align: ${n.align || 'left'};">${children}</p>`;
+                    return `<p style="text-align: ${node.align || 'left'};">${childrenHtml}</p>`;
                 default:
-                    return children;
+                    return childrenHtml;
             }
-        }).join('\n');
-    }
+        }).join('');
+    };
+
 
     const fetchNews = async () => {
         try {
