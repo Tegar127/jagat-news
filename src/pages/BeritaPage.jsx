@@ -6,7 +6,18 @@ import { Newspaper, ChevronRight } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api';
 
+// Helper function to strip HTML tags from a string
+const stripHtml = (html) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+}
+
+
 const NewsCard = ({ item }) => {
+    // Bersihkan tag HTML dari konten untuk pratinjau
+    const textContent = stripHtml(item.content);
+
     return (
         <div className="bg-white rounded-2xl overflow-hidden group transition-all duration-300 ease-in-out shadow-lg hover:shadow-2xl hover:-translate-y-2 border-2 border-transparent hover:border-indigo-500 flex flex-col">
             <div className="overflow-hidden">
@@ -22,7 +33,8 @@ const NewsCard = ({ item }) => {
                         {item.category?.name || 'Tanpa Kategori'}
                     </span>
                     <h3 className="text-xl font-bold text-zinc-800 mb-2">{item.title}</h3>
-                    <p className="text-zinc-600 text-sm leading-relaxed mb-4">{item.content?.substring(0, 100) + '...' || 'Deskripsi tidak tersedia'}</p>
+                    {/* Tampilkan konten yang sudah bersih dari HTML dan dipotong */}
+                    <p className="text-zinc-600 text-sm leading-relaxed mb-4">{textContent.substring(0, 100) + '...' || 'Deskripsi tidak tersedia'}</p>
                 </div>
                 <div className="mt-auto pt-4 border-t border-zinc-100">
                     <p className="text-sm text-zinc-600 mb-4">

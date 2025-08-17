@@ -18,38 +18,53 @@ const categories = [
     { name: "Internasional", icon: <Globe className="w-8 h-8" />, color: "text-indigo-500", hoverBg: "hover:bg-indigo-100", href: '/berita?kategori=internasional' },
 ];
 
+// Helper function to strip HTML tags from a string
+const stripHtml = (html) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+}
+
 // === CHILD COMPONENTS ===
-const NewsCard = ({ news, index }) => (
-    <div 
-        className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl flex flex-col border border-gray-200/80 group"
-        data-aos="fade-up"
-        data-aos-duration="800"
-        data-aos-delay={index * 100}
-        data-aos-once="true"
-    >
-        <div className="relative overflow-hidden">
-            <img 
-                className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105" 
-                src={(news.images && news.images.length > 0) ? news.images[0].url : 'https://placehold.co/400x200?text=Jagat+News'} 
-                alt={`Cover Berita ${news.title}`} 
-            />
-            <div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
-        </div>
-        <div className="p-5 flex flex-col flex-grow">
-            <p className="text-sm font-semibold text-indigo-700 mb-2">{news.author?.name || 'Jagat News'}</p>
-            <h3 className="text-lg font-bold text-gray-900 mb-3 h-16 overflow-hidden">{news.title}</h3>
-            <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(news.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+const NewsCard = ({ news, index }) => {
+    // Bersihkan HTML dari konten untuk pratinjau
+    const textContent = stripHtml(news.content);
+
+    return (
+        <div
+            className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl flex flex-col border border-gray-200/80 group"
+            data-aos="fade-up"
+            data-aos-duration="800"
+            data-aos-delay={index * 100}
+            data-aos-once="true"
+        >
+            <div className="relative overflow-hidden">
+                <img
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                    src={(news.images && news.images.length > 0) ? news.images[0].url : 'https://placehold.co/400x200?text=Jagat+News'}
+                    alt={`Cover Berita ${news.title}`}
+                />
+                <div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">{news.category?.name || 'Berita'}</div>
+            </div>
+            <div className="p-5 flex flex-col flex-grow">
+                <p className="text-sm font-semibold text-indigo-700 mb-2">{news.author?.name || 'Jagat News'}</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2">{news.title}</h3>
+                {/* INI BAGIAN YANG DITAMBAHKAN */}
+                <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">{textContent || 'Konten tidak tersedia.'}</p>
+                {/* ----------------------------- */}
+                <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(news.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                    <Link to={`/berita/${news.id}`} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                        Baca Selengkapnya &rarr;
+                    </Link>
                 </div>
-                <Link to={`/berita/${news.id}`} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Baca Selengkapnya &rarr;
-                </Link>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 // === SECTIONS ===
