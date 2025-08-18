@@ -1,8 +1,4 @@
-// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/App.jsx
-
-// File: src/App.jsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet, Navigate } from 'react-router-dom';
 
 // Import Halaman Publik
@@ -38,23 +34,21 @@ const KontakPage = () => (
 );
 
 // Layout untuk halaman publik (yang memiliki Navbar dan Footer)
-const PublicLayout = () => (
-    <div className="bg-white font-sans antialiased flex flex-col min-h-screen">
-        <Navbar />
+const PublicLayout = ({ theme, toggleTheme }) => ( // Terima props tema
+    <div className="font-sans antialiased flex flex-col min-h-screen">
+        <Navbar theme={theme} toggleTheme={toggleTheme} /> {/* Teruskan props ke Navbar */}
         <main className="flex-grow">
             <Outlet />
         </main>
         <Footer />
-        <LoginModal /> {/* <-- Tambahkan modal di sini */}
+        <LoginModal />
     </div>
 );
 
-
-const AppContent = () => {
+const AppContent = ({ theme, toggleTheme }) => { // Terima props tema
     return (
         <Routes>
-            {/* Rute publik yang menggunakan PublicLayout */}
-             <Route element={<PublicLayout />}>
+            <Route element={<PublicLayout theme={theme} toggleTheme={toggleTheme} />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/berita" element={<BeritaPage />} />
                 <Route path="/berita/:id" element={<BeritaDetailPage />} />
@@ -97,10 +91,25 @@ const AppContent = () => {
 };
 
 export default function App() {
+    // Logika untuk mengelola tema
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('theme') || 'light';
+    });
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    };
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
+
     return (
         <Router>
             <AuthProvider>
-                <AppContent />
+                <AppContent theme={theme} toggleTheme={toggleTheme} />
             </AuthProvider>
         </Router>
     );

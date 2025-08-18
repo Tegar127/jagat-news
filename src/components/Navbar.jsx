@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, Newspaper, UserCircle, LogOut, User, LayoutDashboard } from 'lucide-react';
+import { Search, Menu, X, Newspaper, UserCircle, LogOut, User, LayoutDashboard, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Navbar = () => {
+const Navbar = ({ theme, toggleTheme }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -66,7 +66,7 @@ const Navbar = () => {
     );
 
     return (
-        <header className="bg-white shadow-sm sticky top-0 z-50">
+        <header className="bg-card border-b border-custom shadow-sm sticky top-0 z-50">
             <div className="container mx-auto px-4">
                 {/* Desktop Header */}
                 <div className="hidden lg:flex items-center justify-between py-4">
@@ -82,15 +82,20 @@ const Navbar = () => {
                     </nav>
                     <div className="flex items-center gap-4">
                         <form onSubmit={handleSearch} className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                             <input
                                 type="text"
                                 placeholder="Cari berita..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="pl-10 pr-4 py-2 bg-input border border-custom rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </form>
+
+                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                        </button>
+
                         {user ? renderProfileDropdown() : renderAuthButtons()}
                     </div>
                 </div>
@@ -99,17 +104,20 @@ const Navbar = () => {
                 <div className="lg:hidden flex items-center justify-between h-20">
                     <Link to="/" className="flex items-center gap-2">
                         <Newspaper className="w-8 h-8 text-blue-700" />
-                        <span className="text-xl font-bold text-gray-900">Jagat News</span>
+                        <span className="text-xl font-bold text-card-foreground">Jagat News</span>
                     </Link>
                     <div className="flex items-center gap-2">
+                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                        </button>
                         {user && renderProfileDropdown()}
-                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-700 p-2">
+                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2">
                             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>
                 </div>
             </div>
-
+            
             {/* Mobile Menu */}
             {isMenuOpen && (
                 <div className="lg:hidden bg-white border-t border-gray-200">
