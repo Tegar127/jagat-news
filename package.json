@@ -10,17 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.7", 
+    "@supabase/supabase-js": "^2.39.7",
     "aos": "^2.3.4",
+    "dom-parser": "^0.1.6",
     "lucide-react": "^0.515.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "slate": "^0.102.0",
     "slate-history": "^0.100.0",
-    "slate-react": "^0.102.0",
-    "dom-parser": "^0.1.6",
-    "slate-hyperscript": "^0.100.0"
+    "slate-hyperscript": "^0.100.0",
+    "slate-react": "^0.102.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
