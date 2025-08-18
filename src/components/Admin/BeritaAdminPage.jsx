@@ -1,4 +1,3 @@
-// tegar127/jagat-news/jagat-news-fe7d803b6f9c7356db28f446f52ea3d22477216b/src/components/Admin/BeritaAdminPage.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createEditor, Editor, Transforms, Text, Element as SlateElement } from 'slate';
 import { Slate, Editable, withReact, useSlate } from 'slate-react';
@@ -7,8 +6,8 @@ import {
     PlusCircle, Search, Edit, Trash2, Upload, XCircle,
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify
 } from 'lucide-react';
-
-const API_URL = '/api';
+import { supabase } from '../../supabaseClient'; // Impor Supabase
+import { useAuth } from '../../context/AuthContext'; // Impor untuk mendapatkan user ID
 
 const initialValue = [
     {
@@ -95,6 +94,7 @@ const Toolbar = () => {
 
 // Main Component
 const BeritaAdminPage = () => {
+    const { user } = useAuth();
     const [newsData, setNewsData] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [currentNews, setCurrentNews] = useState({
@@ -111,27 +111,20 @@ const BeritaAdminPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     const [editorValue, setEditorValue] = useState(initialValue);
-
-    const renderLeaf = useCallback(props => <Leaf {...props} />, []);
-    const renderElement = useCallback(props => <Element {...props} />, []);
     
-    // Function to deserialize HTML to Slate nodes (IMPROVED)
     const deserialize = (htmlString) => {
         if (!htmlString) return initialValue;
-
         const doc = new DOMParser().parseFromString(htmlString, 'text/html');
         if (!doc.body.hasChildNodes()) return initialValue;
-    
         const slateNodes = Array.from(doc.body.childNodes).map(node => domNodeToSlate(node)).filter(Boolean);
-
         return slateNodes.length > 0 ? slateNodes : initialValue;
     };
     
     const domNodeToSlate = (node) => {
-        if (node.nodeType === 3) { // Text node
+        if (node.nodeType === 3) {
             return { text: node.textContent };
         }
-        if (node.nodeType !== 1) { // Not an element node
+        if (node.nodeType !== 1) {
             return null;
         }
 
@@ -150,14 +143,13 @@ const BeritaAdminPage = () => {
                 return children.map(child => ({ ...child, italic: true }));
             case 'U':
                 return children.map(child => ({ ...child, underline: true }));
-            case 'BODY': // Unlikely to be hit with childNodes, but good practice
+            case 'BODY':
                  return { type: 'paragraph', align: 'left', children };
-            default: // Treat unknown tags as paragraphs
+            default:
                  return { type: 'paragraph', align: 'left', children };
         }
     };
     
-    // Function to serialize Slate nodes to HTML (IMPROVED)
     const serialize = (nodes) => {
         return nodes.map(node => {
             if (Text.isText(node)) {
@@ -187,14 +179,17 @@ const BeritaAdminPage = () => {
 
     const fetchNews = async () => {
         try {
-            const response = await fetch(`${API_URL}/berita`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
-            setNewsData(data.map(news => ({
+            const { data, error } = await supabase
+                .from('Post')
+                .select(`*, author:User(name), category:Category(name), images:Image(*)`)
+                .order('publishedAt', { ascending: false });
+            if (error) throw error;
+            const formattedData = data.map(news => ({
                 ...news,
                 author: news.author ? news.author.name : 'N/A',
                 category: news.category ? news.category.name : 'N/A',
-            })));
+            }));
+            setNewsData(formattedData);
         } catch (error) { console.error("Gagal mengambil data berita:", error); }
     };
 
@@ -229,7 +224,7 @@ const BeritaAdminPage = () => {
     };
 
     const handleEdit = (news) => {
-        setCurrentNews(news);
+        setCurrentNews({ ...news, category: news.category?.name || '' });
         setEditorValue(deserialize(news.content || ''));
         setImageFiles([]);
         setImagesToDelete([]);
@@ -239,35 +234,79 @@ const BeritaAdminPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const content = serialize(editorValue);
-        const formData = new FormData();
-        formData.append('title', currentNews.title);
-        formData.append('category', currentNews.category);
-        formData.append('status', currentNews.status);
-        formData.append('content', content);
-        formData.append('canBeCopied', String(currentNews.canBeCopied));
-        if (imageFiles.length > 0) imageFiles.forEach(file => formData.append('imageFiles', file));
-        if (imagesToDelete.length > 0) formData.append('imagesToDelete', JSON.stringify(imagesToDelete));
-        if (!currentNews.id && imageFiles.length === 0) return alert("Unggah setidaknya satu gambar.");
-
-        const method = currentNews.id ? 'PUT' : 'POST';
-        const url = currentNews.id ? `${API_URL}/berita/${currentNews.id}` : `${API_URL}/berita`;
 
         try {
-            const response = await fetch(url, { method, body: formData });
-            if (!response.ok) throw new Error((await response.json()).error || 'Gagal menyimpan berita');
+            const { data: category, error: catError } = await supabase
+                .from('Category')
+                .upsert({ name: currentNews.category }, { onConflict: 'name' })
+                .select()
+                .single();
+            if (catError) throw catError;
+
+            const postData = {
+                title: currentNews.title,
+                content: content,
+                status: currentNews.status,
+                canBeCopied: currentNews.canBeCopied,
+                categoryId: category.id,
+                authorId: user.id
+            };
+
+            let postId = currentNews.id;
+            if (postId) {
+                const { error: postError } = await supabase.from('Post').update(postData).eq('id', postId);
+                if (postError) throw postError;
+            } else {
+                const { data: newPost, error: postError } = await supabase.from('Post').insert(postData).select().single();
+                if (postError) throw postError;
+                postId = newPost.id;
+            }
+
+            if (imagesToDelete.length > 0) {
+                const { error: deleteImgError } = await supabase.from('Image').delete().in('id', imagesToDelete);
+                if (deleteImgError) throw deleteImgError;
+            }
+
+            if (imageFiles.length > 0) {
+                const uploadPromises = imageFiles.map(file => {
+                    const fileName = `berita/${postId}/${Date.now()}_${file.name}`;
+                    return supabase.storage.from('berita').upload(fileName, file);
+                });
+                const uploadResults = await Promise.all(uploadPromises);
+
+                const newImagesData = uploadResults.map(result => {
+                    if (result.error) throw result.error;
+                    const { data } = supabase.storage.from('berita').getPublicUrl(result.data.path);
+                    return { postId: postId, url: data.publicUrl };
+                });
+
+                const { error: imageInsertError } = await supabase.from('Image').insert(newImagesData);
+                if (imageInsertError) throw imageInsertError;
+            }
+            
             await fetchNews();
             setIsFormVisible(false);
-        } catch (error) { alert('Terjadi kesalahan: ' + error.message); }
+
+        } catch (error) {
+            alert('Terjadi kesalahan: ' + error.message);
+        }
     };
 
     const handleDelete = async (id) => {
         if (window.confirm('Yakin ingin menghapus berita ini?')) {
-            await fetch(`${API_URL}/berita/${id}`, { method: 'DELETE' });
-            fetchNews();
+            try {
+                await supabase.from('Image').delete().eq('postId', id);
+                await supabase.from('Post').delete().eq('id', id);
+                await fetchNews();
+            } catch (error) {
+                alert('Gagal menghapus berita: ' + error.message);
+            }
         }
     };
 
     const filteredNews = newsData.filter(news => news.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    const renderLeaf = useCallback(props => <Leaf {...props} />, []);
+    const renderElement = useCallback(props => <Element {...props} />, []);
 
     return (
         <div>
@@ -304,7 +343,6 @@ const BeritaAdminPage = () => {
                                 </div>
                             </Slate>
                         </div>
-                        {/* Image Upload Section */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Gambar</label>
                             {currentNews.id && currentNews.images && currentNews.images.length > 0 && (
@@ -340,7 +378,6 @@ const BeritaAdminPage = () => {
                                 </div>
                             </div>
                         </div>
-                        {/* Status and other options */}
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
                             <select name="status" value={currentNews.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg">
@@ -362,7 +399,6 @@ const BeritaAdminPage = () => {
                 </div>
             )}
 
-            {/* Table of News */}
             <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200/80">
                 <div className="mb-4">
                     <div className="relative">
