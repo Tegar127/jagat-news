@@ -325,9 +325,20 @@ const BeritaAdminPage = () => {
                             <label className="block text-gray-700 text-sm font-bold mb-2">Judul</label>
                             <input type="text" name="title" value={currentNews.title} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
                         </div>
-                        <div className="mb-4">
+                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
-                            <input type="text" name="category" value={currentNews.category} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg" required />
+                            <select
+                                name="category"
+                                value={currentNews.category}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border rounded-lg bg-white"
+                                required
+                            >
+                                <option value="" disabled>Pilih Kategori</option>
+                                <option value="Politik">Politik</option>
+                                <option value="Sosial">Sosial</option>
+                                <option value="Sport">Sport</option>
+                            </select>
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">Isi Berita</label>
