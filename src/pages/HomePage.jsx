@@ -8,7 +8,7 @@ import 'aos/dist/aos.css';
 import SidebarNews from '../components/SidebarNews';
 import { supabase } from '../supabaseClient'; // Impor Supabase Client
 
-// Data statis untuk kategori (tidak berubah)
+// Data statis untuk kategori
 const categories = [
     { name: "Politik", icon: <Briefcase className="w-8 h-8" />, color: "text-red-500", hoverBg: "hover:bg-red-100", href: '/berita?kategori=politik' },
     { name: "Teknologi", icon: <Cpu className="w-8 h-8" />, color: "text-blue-500", hoverBg: "hover:bg-blue-100", href: '/berita?kategori=teknologi' },
@@ -17,14 +17,14 @@ const categories = [
     { name: "Internasional", icon: <Globe className="w-8 h-8" />, color: "text-indigo-500", hoverBg: "hover:bg-indigo-100", href: '/berita?kategori=internasional' },
 ];
 
-// Helper function to strip HTML tags (tidak berubah)
+// Helper function to strip HTML tags from a string
 const stripHtml = (html) => {
     if (!html) return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || "";
 }
 
-// === CHILD COMPONENTS (tidak berubah) ===
+// === CHILD COMPONENTS ===
 const NewsCard = ({ news, index }) => {
     const textContent = stripHtml(news.content);
     return (
@@ -62,7 +62,7 @@ const NewsCard = ({ news, index }) => {
 };
 
 
-// === SECTIONS (DIMODIFIKASI UNTUK SUPABASE) ===
+// === SECTIONS ===
 const PromoBannerSection = () => {
     const [promoSlides, setPromoSlides] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -71,7 +71,6 @@ const PromoBannerSection = () => {
     useEffect(() => {
         const fetchPromos = async () => {
             try {
-                // Ganti fetch ke /api/promo dengan query Supabase
                 const { data, error } = await supabase
                     .from('Promo')
                     .select('*')
@@ -138,34 +137,32 @@ const PromoBannerSection = () => {
 };
 
 const CategorySection = () => (
-    // ... (JSX tidak berubah) ...
     <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+             <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900" data-aos="fade-up">Jelajahi Berdasarkan Kategori</h2>
                 <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Temukan berita yang relevan dengan minat Anda lebih cepat.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">{categories.map((c, index) => (
-                <a
+                 <a
                     key={c.name}
                     href={c.href}
                     className={`group text-center p-4 md:p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 ${c.hoverBg}`}
                     data-aos="fade-up"
                     data-aos-delay={index * 100}
                 >
-                    <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
-                        {c.icon}
-                    </div>
-                    <h3 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                        {c.name}
-                    </h3>
-                </a>
-            ))}
+            <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
+                {c.icon}
             </div>
+            <h3 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                {c.name}
+            </h3>
+        </a>
+    ))}
+                </div>
         </div>
     </section>
 );
-
 
 const LatestAndPopularSection = () => {
     const [latestNews, setLatestNews] = useState([]);
@@ -175,20 +172,19 @@ const LatestAndPopularSection = () => {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                // Ambil berita terbaru dan populer dari Supabase secara bersamaan
                 const [latestRes, popularRes] = await Promise.all([
                     supabase
                         .from('Post')
                         .select('*, category:Category(name), images:Image(url)')
                         .eq('status', 'PUBLISHED')
                         .order('publishedAt', { ascending: false })
-                        .limit(4), // Ambil 4 berita terbaru
+                        .limit(4),
                     supabase
                         .from('Post')
                         .select('*, category:Category(name), images:Image(url)')
                         .eq('status', 'PUBLISHED')
                         .order('viewCount', { ascending: false })
-                        .limit(5) // Ambil 5 berita populer
+                        .limit(5)
                 ]);
 
                 if (latestRes.error) throw latestRes.error;
@@ -233,57 +229,15 @@ const LatestAndPopularSection = () => {
                         <SidebarNews title="Berita Terpopuler" news={popularNews} loading={loading} showRanking={true} />
                     </aside>
                 </div>
-            </div>
-        </section>
-    );
-};
-
-const FeaturedSection = () => {
-    const [featuredNews, setFeaturedNews] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchAllNews = async () => {
-            try {
-                const response = await fetch(`${API_URL}/berita`);
-                const data = await response.json();
-                setFeaturedNews(data.slice(0, 6)); 
-            } catch (error) {
-                console.error("Gagal mengambil data berita:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAllNews();
-    }, []);
-
-    return (
-        <section id="featured-content" className="py-16 bg-white">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-12 text-center" data-aos="fade-up">
-                    Berita Unggulan Lainnya
-                </h2>
-                {loading ? (
-                    <p className="text-center text-gray-500">Memuat berita unggulan...</p>
-                ) : featuredNews.length > 0 ? (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {featuredNews.map((news, index) => (
-                                <NewsCard key={news.id} news={news} index={index} />
-                            ))}
-                        </div>
-                        <div className="text-center mt-12" data-aos="fade-up">
-                            <Link 
-                                to="/berita" 
-                                className="inline-block bg-white text-gray-800 font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 border border-gray-200"
-                            >
-                                Berita Unggulan Lainnya
-                            </Link>
-                        </div>
-                    </>
-                ) : (
-                     <p className="text-center text-gray-500">Belum ada berita unggulan untuk ditampilkan.</p>
-                )}
+                
+                <div className="text-center mt-12" data-aos="fade-up">
+                    <Link 
+                        to="/berita" 
+                        className="inline-block bg-white text-gray-800 font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 border border-gray-200"
+                    >
+                        Lihat Semua Berita
+                    </Link>
+                </div>
             </div>
         </section>
     );
@@ -317,7 +271,6 @@ export default function HomePage() {
       </div>
       <CategorySection />
       <LatestAndPopularSection />
-      {/* FeaturedSection tidak lagi dipanggil di sini */}
     </div>
   )
 }
