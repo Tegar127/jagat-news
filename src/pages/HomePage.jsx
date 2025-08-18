@@ -1,12 +1,10 @@
-// src/pages/HomePage.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe, Calendar } from 'lucide-react';
+import { Briefcase, Cpu, Scale, TrendingUp, Globe, Calendar } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SidebarNews from '../components/SidebarNews';
-import { supabase } from '../supabaseClient'; // Impor Supabase Client
+import { supabase } from '../supabaseClient';
 
 // Data statis untuk kategori
 const categories = [
@@ -29,7 +27,7 @@ const NewsCard = ({ news, index }) => {
     const textContent = stripHtml(news.content);
     return (
         <div
-            className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl flex flex-col border border-gray-200/80 group"
+            className="bg-card rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl flex flex-col border border-custom group"
             data-aos="fade-up"
             data-aos-duration="800"
             data-aos-delay={index * 100}
@@ -45,10 +43,10 @@ const NewsCard = ({ news, index }) => {
             </div>
             <div className="p-5 flex flex-col flex-grow">
                 <p className="text-sm font-semibold text-indigo-700 mb-2">{news.author?.name || 'Jagat News'}</p>
-                <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2">{news.title}</h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">{textContent || 'Konten tidak tersedia.'}</p>
-                <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                <h3 className="text-lg font-bold text-card-foreground mb-3 line-clamp-2">{news.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-grow">{textContent || 'Konten tidak tersedia.'}</p>
+                <div className="mt-auto flex justify-between items-center pt-4 border-t border-custom">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
                         <span>{new Date(news.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
                     </div>
@@ -75,7 +73,6 @@ const PromoBannerSection = () => {
                     .from('Promo')
                     .select('*')
                     .eq('isActive', true);
-
                 if (error) throw error;
                 setPromoSlides(data);
             } catch (error) {
@@ -99,7 +96,7 @@ const PromoBannerSection = () => {
     }, [nextSlide]);
 
     if (loading) {
-        return <div className="h-[400px] flex justify-center items-center bg-gray-200 rounded-2xl animate-pulse"></div>;
+        return <div className="h-[400px] flex justify-center items-center bg-gray-200 dark:bg-gray-800 rounded-2xl animate-pulse"></div>;
     }
     
     if (promoSlides.length === 0) {
@@ -137,24 +134,24 @@ const PromoBannerSection = () => {
 };
 
 const CategorySection = () => (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-card">
         <div className="container mx-auto px-4">
              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900" data-aos="fade-up">Jelajahi Berdasarkan Kategori</h2>
-                <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Temukan berita yang relevan dengan minat Anda lebih cepat.</p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-card-foreground" data-aos="fade-up">Jelajahi Berdasarkan Kategori</h2>
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Temukan berita yang relevan dengan minat Anda lebih cepat.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">{categories.map((c, index) => (
                  <a
                     key={c.name}
                     href={c.href}
-                    className={`group text-center p-4 md:p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 ${c.hoverBg}`}
+                    className={`group text-center p-4 md:p-6 bg-background rounded-2xl border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300`}
                     data-aos="fade-up"
                     data-aos-delay={index * 100}
                 >
-            <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
+            <div className={`inline-flex items-center justify-center p-4 bg-card rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
                 {c.icon}
             </div>
-            <h3 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
+            <h3 className="font-bold text-card-foreground group-hover:text-indigo-600 transition-colors">
                 {c.name}
             </h3>
         </a>
@@ -163,6 +160,7 @@ const CategorySection = () => (
         </div>
     </section>
 );
+
 
 const LatestAndPopularSection = () => {
     const [latestNews, setLatestNews] = useState([]);
@@ -203,15 +201,15 @@ const LatestAndPopularSection = () => {
     }, []);
 
     return (
-        <section id="content" className="py-16 bg-gray-50">
+        <section id="content" className="py-16 bg-background">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Kolom Berita Terbaru */}
                     <div className="lg:col-span-2">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8" data-aos="fade-right">Berita Terbaru</h2>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-8" data-aos="fade-right">Berita Terbaru</h2>
                          {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {[...Array(4)].map((_, i) => <div key={i} className="bg-gray-200 h-96 rounded-xl animate-pulse"></div>)}
+                                {[...Array(4)].map((_, i) => <div key={i} className="bg-gray-200 dark:bg-gray-800 h-96 rounded-xl animate-pulse"></div>)}
                             </div>
                         ) : latestNews.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -220,7 +218,7 @@ const LatestAndPopularSection = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-center text-gray-500 py-10">Belum ada berita terbaru.</p>
+                            <p className="text-center text-muted-foreground py-10">Belum ada berita terbaru.</p>
                         )}
                     </div>
                     
@@ -233,7 +231,7 @@ const LatestAndPopularSection = () => {
                 <div className="text-center mt-12" data-aos="fade-up">
                     <Link 
                         to="/berita" 
-                        className="inline-block bg-white text-gray-800 font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 border border-gray-200"
+                        className="inline-block bg-card text-card-foreground font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-custom"
                     >
                         Lihat Semua Berita
                     </Link>
@@ -265,7 +263,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-background">
       <div className="container mx-auto px-4 pt-8">
         <PromoBannerSection />
       </div>
