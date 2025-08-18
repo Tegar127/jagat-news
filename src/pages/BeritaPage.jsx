@@ -3,21 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Newspaper, ChevronRight } from 'lucide-react';
+import { supabase } from '../supabaseClient'; // 1. Impor Supabase Client
 
-const API_URL = '/api';
-
-// Helper function to strip HTML tags from a string
+// Helper function to strip HTML tags from a string (tidak berubah)
 const stripHtml = (html) => {
     if (!html) return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || "";
 }
 
-
+// Komponen NewsCard (tidak berubah)
 const NewsCard = ({ item }) => {
-    // Bersihkan tag HTML dari konten untuk pratinjau
     const textContent = stripHtml(item.content);
-
     return (
         <div className="bg-white rounded-2xl overflow-hidden group transition-all duration-300 ease-in-out shadow-lg hover:shadow-2xl hover:-translate-y-2 border-2 border-transparent hover:border-indigo-500 flex flex-col">
             <div className="overflow-hidden">
@@ -33,7 +30,6 @@ const NewsCard = ({ item }) => {
                         {item.category?.name || 'Tanpa Kategori'}
                     </span>
                     <h3 className="text-xl font-bold text-zinc-800 mb-2">{item.title}</h3>
-                    {/* Tampilkan konten yang sudah bersih dari HTML dan dipotong */}
                     <p className="text-zinc-600 text-sm leading-relaxed mb-4">{textContent.substring(0, 100) + '...' || 'Deskripsi tidak tersedia'}</p>
                 </div>
                 <div className="mt-auto pt-4 border-t border-zinc-100">
@@ -57,11 +53,26 @@ export default function BeritaPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // 2. Ganti logika fetch dengan query Supabase
         const fetchAllNews = async () => {
+            setLoading(true);
             try {
-                const response = await fetch(`${API_URL}/berita`);
-                const data = await response.json();
-                setAllNews(data);
+                const { data, error } = await supabase
+                    .from('Post')
+                    .select(`*, author:User(name), category:Category(name), images:Image(url)`)
+                    .eq('status', 'PUBLISHED')
+                    .order('publishedAt', { ascending: false });
+
+                if (error) throw error;
+                
+                const formattedNews = data.map(item => ({
+                    ...item,
+                    author: item.author,
+                    category: item.category,
+                    images: item.images,
+                }));
+
+                setAllNews(formattedNews);
             } catch (error) {
                 console.error("Gagal mengambil semua berita:", error);
             } finally {
