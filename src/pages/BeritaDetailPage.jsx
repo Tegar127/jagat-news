@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { User, Calendar, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 const API_URL = '/api';
 
@@ -70,13 +71,30 @@ export default function BeritaDetailPage() {
         const fetchNewsDetail = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${API_URL}/berita/${id}`);
-                if (!response.ok) {
-                    setNews(null);
-                } else {
-                    const data = await response.json();
-                    setNews(data);
+                // 2. Ambil detail berita dari Supabase
+                const { data, error } = await supabase
+                    .from('Post')
+                    .select(`
+                        *,
+                        author:User ( name ),
+                        category:Category ( name ),
+                        images:Image ( id, url )
+                    `)
+                    .eq('id', id)
+                    .single(); // .single() untuk mendapatkan satu objek, bukan array
+
+                if (error) {
+                    setNews(null); // Jika tidak ditemukan, data akan null
+                    throw error;
                 }
+
+                setNews(data);
+
+                // 3. Panggil Edge Function untuk menambah view count (tanpa menunggu hasilnya)
+                supabase.functions.invoke('increment-view-count', {
+                    body: { postId: id },
+                });
+
             } catch (error) {
                 console.error("Gagal mengambil detail berita:", error);
                 setNews(null);

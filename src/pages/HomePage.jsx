@@ -6,10 +6,9 @@ import { Star, Briefcase, Cpu, Scale, TrendingUp, Globe, Calendar } from 'lucide
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SidebarNews from '../components/SidebarNews';
+import { supabase } from '../supabaseClient'; // Impor Supabase Client
 
-const API_URL = '/api';
-
-// Data statis untuk kategori
+// Data statis untuk kategori (tidak berubah)
 const categories = [
     { name: "Politik", icon: <Briefcase className="w-8 h-8" />, color: "text-red-500", hoverBg: "hover:bg-red-100", href: '/berita?kategori=politik' },
     { name: "Teknologi", icon: <Cpu className="w-8 h-8" />, color: "text-blue-500", hoverBg: "hover:bg-blue-100", href: '/berita?kategori=teknologi' },
@@ -18,18 +17,16 @@ const categories = [
     { name: "Internasional", icon: <Globe className="w-8 h-8" />, color: "text-indigo-500", hoverBg: "hover:bg-indigo-100", href: '/berita?kategori=internasional' },
 ];
 
-// Helper function to strip HTML tags from a string
+// Helper function to strip HTML tags (tidak berubah)
 const stripHtml = (html) => {
     if (!html) return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc.body.textContent || "";
 }
 
-// === CHILD COMPONENTS ===
+// === CHILD COMPONENTS (tidak berubah) ===
 const NewsCard = ({ news, index }) => {
-    // Bersihkan HTML dari konten untuk pratinjau
     const textContent = stripHtml(news.content);
-
     return (
         <div
             className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl flex flex-col border border-gray-200/80 group"
@@ -49,9 +46,7 @@ const NewsCard = ({ news, index }) => {
             <div className="p-5 flex flex-col flex-grow">
                 <p className="text-sm font-semibold text-indigo-700 mb-2">{news.author?.name || 'Jagat News'}</p>
                 <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2">{news.title}</h3>
-                {/* INI BAGIAN YANG DITAMBAHKAN */}
                 <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-grow">{textContent || 'Konten tidak tersedia.'}</p>
-                {/* ----------------------------- */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-100">
                     <div className="flex items-center gap-1.5 text-sm text-gray-500">
                         <Calendar className="w-4 h-4" />
@@ -67,7 +62,7 @@ const NewsCard = ({ news, index }) => {
 };
 
 
-// === SECTIONS ===
+// === SECTIONS (DIMODIFIKASI UNTUK SUPABASE) ===
 const PromoBannerSection = () => {
     const [promoSlides, setPromoSlides] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -76,8 +71,13 @@ const PromoBannerSection = () => {
     useEffect(() => {
         const fetchPromos = async () => {
             try {
-                const response = await fetch(`${API_URL}/promo`);
-                const data = await response.json();
+                // Ganti fetch ke /api/promo dengan query Supabase
+                const { data, error } = await supabase
+                    .from('Promo')
+                    .select('*')
+                    .eq('isActive', true);
+
+                if (error) throw error;
                 setPromoSlides(data);
             } catch (error) {
                 console.error("Gagal mengambil data promo:", error);
@@ -122,13 +122,13 @@ const PromoBannerSection = () => {
                 </div>
              ))}
             <div className="relative z-10 h-full flex flex-col justify-center items-start text-white p-8 md:p-12 lg:p-16">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 max-w-lg" data-aos="fade-right" data-aos-duration="800" data-aos-once="true">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 max-w-lg">
                     {currentSlide.title}
                 </h2>
-                <p className="text-lg md:text-xl mb-6 max-w-md opacity-90" data-aos="fade-right" data-aos-duration="800" data-aos-delay="200" data-aos-once="true">
+                <p className="text-lg md:text-xl mb-6 max-w-md opacity-90">
                     {currentSlide.subtitle}
                 </p>
-                <Link to={currentSlide.buttonLink || '#'} className="bg-white text-blue-700 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-all duration-300 transform hover:scale-105" data-aos="fade-up" data-aos-duration="800" data-aos-delay="400" data-aos-once="true">
+                <Link to={currentSlide.buttonLink || '#'} className="bg-white text-blue-700 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition-all duration-300 transform hover:scale-105">
                     {currentSlide.buttonText || 'Baca Selengkapnya'}
                 </Link>
             </div>
@@ -138,32 +138,34 @@ const PromoBannerSection = () => {
 };
 
 const CategorySection = () => (
+    // ... (JSX tidak berubah) ...
     <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-             <div className="text-center mb-12">
+            <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900" data-aos="fade-up">Jelajahi Berdasarkan Kategori</h2>
                 <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Temukan berita yang relevan dengan minat Anda lebih cepat.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">{categories.map((c, index) => (
-                 <a
+                <a
                     key={c.name}
                     href={c.href}
                     className={`group text-center p-4 md:p-6 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 ${c.hoverBg}`}
                     data-aos="fade-up"
                     data-aos-delay={index * 100}
                 >
-            <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
-                {c.icon}
+                    <div className={`inline-flex items-center justify-center p-4 bg-white rounded-full shadow-md mb-4 transition-all duration-300 ${c.color} group-hover:bg-indigo-600 group-hover:text-white`}>
+                        {c.icon}
+                    </div>
+                    <h3 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                        {c.name}
+                    </h3>
+                </a>
+            ))}
             </div>
-            <h3 className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
-                {c.name}
-            </h3>
-        </a>
-    ))}
-                </div>
         </div>
     </section>
 );
+
 
 const LatestAndPopularSection = () => {
     const [latestNews, setLatestNews] = useState([]);
@@ -173,15 +175,27 @@ const LatestAndPopularSection = () => {
     useEffect(() => {
         const fetchNews = async () => {
             try {
+                // Ambil berita terbaru dan populer dari Supabase secara bersamaan
                 const [latestRes, popularRes] = await Promise.all([
-                    fetch(`${API_URL}/berita/latest`),
-                    fetch(`${API_URL}/berita/popular`),
+                    supabase
+                        .from('Post')
+                        .select('*, category:Category(name), images:Image(url)')
+                        .eq('status', 'PUBLISHED')
+                        .order('publishedAt', { ascending: false })
+                        .limit(4), // Ambil 4 berita terbaru
+                    supabase
+                        .from('Post')
+                        .select('*, category:Category(name), images:Image(url)')
+                        .eq('status', 'PUBLISHED')
+                        .order('viewCount', { ascending: false })
+                        .limit(5) // Ambil 5 berita populer
                 ]);
-                const latestData = await latestRes.json();
-                const popularData = await popularRes.json();
 
-                setLatestNews(latestData);
-                setPopularNews(popularData);
+                if (latestRes.error) throw latestRes.error;
+                if (popularRes.error) throw popularRes.error;
+
+                setLatestNews(latestRes.data);
+                setPopularNews(popularRes.data);
 
             } catch (error) {
                 console.error("Gagal mengambil data berita:", error);
@@ -275,7 +289,6 @@ const FeaturedSection = () => {
     );
 };
 
-
 export default function HomePage() {
   useEffect(() => {
     AOS.init({
@@ -304,7 +317,7 @@ export default function HomePage() {
       </div>
       <CategorySection />
       <LatestAndPopularSection />
-      <FeaturedSection />
+      {/* FeaturedSection tidak lagi dipanggil di sini */}
     </div>
   )
 }

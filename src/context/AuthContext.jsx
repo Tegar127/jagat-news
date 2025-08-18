@@ -1,86 +1,94 @@
-// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/context/AuthContext.jsx
-
 // src/context/AuthContext.jsx
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient'; // Impor klien Supabase yang baru dibuat
 
 const AuthContext = createContext(null);
-const API_URL = 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(() => {
-        try {
-            const storedUser = localStorage.getItem('user');
-            return storedUser ? JSON.parse(storedUser) : null;
-        } catch { return null; }
-    });
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // State baru untuk modal
+    // State untuk modal (tidak berubah)
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalType, setModalType] = useState('login'); // 'login' or 'register'
+    const [modalType, setModalType] = useState('login');
+
+    useEffect(() => {
+        // 1. Cek sesi pengguna saat aplikasi pertama kali dimuat
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+            setLoading(false);
+        };
+
+        getSession();
+
+        // 2. Dengarkan perubahan status autentikasi (login, logout)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        // 3. Hentikan listener saat komponen tidak lagi digunakan
+        return () => subscription.unsubscribe();
+    }, []);
 
     const openModal = (type = 'login') => {
         setModalType(type);
         setIsModalOpen(true);
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
+    const closeModal = () => setIsModalOpen(false);
+
+    // --- FUNGSI AUTENTIKASI BARU DENGAN SUPABASE ---
+
+    const login = async (email, password) => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw new Error(error.message);
+        closeModal();
     };
 
+    const loginWithGoogle = async () => {
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+        if (error) throw new Error(error.message);
+    };
 
-    const handleLoginSuccess = (userData) => {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        closeModal(); // Tutup modal setelah berhasil login
-        // SEMUA PENGGUNA DIARAHKAN KE HALAMAN UTAMA SETELAH LOGIN
+    const register = async (name, email, password) => {
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    // Menyimpan metadata tambahan saat registrasi
+                    name: name,
+                }
+            }
+        });
+        if (error) throw new Error(error.message);
+        alert('Registrasi berhasil! Silakan cek email Anda untuk verifikasi.');
+        closeModal();
+    };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
         navigate('/');
     };
     
+    // Fungsi ini tidak lagi terlalu relevan karena state user dikelola otomatis
     const updateUser = (newUserData) => {
-        setUser(newUserData);
-        localStorage.setItem('user', JSON.stringify(newUserData));
+        // Logika pembaruan manual bisa ditambahkan di sini jika perlu
     };
 
-
-    const login = async (email, password) => {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
-        handleLoginSuccess(data);
-    };
-
-    const loginWithGoogle = async (token) => {
-        const response = await fetch(`${API_URL}/auth/google-login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error);
-        handleLoginSuccess(data);
-    };
-
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem('user');
-        navigate('/'); // DIARAHKAN KE HOME SETELAH LOGOUT
-    };
-
-    const value = { 
-        user, 
-        login, 
-        logout, 
-        loginWithGoogle, 
+    const value = {
+        user,
+        loading,
         isAuthenticated: !!user,
+        login,
+        logout,
+        loginWithGoogle,
+        register, // Tambahkan fungsi register ke context
         updateUser,
-        // Tambahkan state dan fungsi modal ke context value
         isModalOpen,
         modalType,
         openModal,
@@ -90,6 +98,4 @@ export const AuthProvider = ({ children }) => {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-    return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

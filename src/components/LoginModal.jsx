@@ -78,7 +78,7 @@ const SignInForm = ({ onSwitch }) => {
 };
 
 const SignUpForm = ({ onSwitch }) => {
-    const { loginWithGoogle, closeModal } = useAuth();
+    const { register, loginWithGoogle, closeModal } = useAuth();
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -86,25 +86,20 @@ const SignUpForm = ({ onSwitch }) => {
     const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleSignUp = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/auth/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error);
-            alert('Registrasi berhasil! Silakan login.');
-            onSwitch(); // Pindah ke form login setelah berhasil
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+        // Panggil fungsi register dari context
+        await register(formData.name, formData.email, formData.password);
+        // Pesan sukses sudah ada di dalam fungsi register
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
+};
+
 
     return (
         <div>

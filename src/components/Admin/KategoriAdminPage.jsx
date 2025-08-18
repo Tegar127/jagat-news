@@ -1,16 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-
-const initialCategories = [
-    { id: 1, name: 'Teknologi' },
-    { id: 2, name: 'Olahraga' },
-    { id: 3, name: 'Ekonomi' },
-];
+import { supabase } from '../../supabaseClient'; // 1. Impor klien Supabase
 
 const KategoriAdminPage = () => {
-    const [categories, setCategories] = useState(initialCategories);
+    const [categories, setCategories] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [currentCategory, setCurrentCategory] = useState({ id: null, name: '' });
+
+    // 2. READ: Fungsi untuk mengambil semua data kategori dari Supabase
+    const fetchCategories = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('Category') // Nama tabel di database Supabase Anda
+                .select('*')
+                .order('name', { ascending: true }); // Urutkan berdasarkan nama
+
+            if (error) throw error;
+            setCategories(data);
+        } catch (error) {
+            console.error('Gagal mengambil data kategori:', error);
+            alert(`Error: ${error.message}`);
+        }
+    };
+
+    // Panggil fetchCategories saat komponen pertama kali dimuat
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     const handleInputChange = (e) => {
         setCurrentCategory({ ...currentCategory, name: e.target.value });
@@ -26,20 +42,50 @@ const KategoriAdminPage = () => {
         setIsFormVisible(true);
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm('Yakin ingin menghapus kategori ini?')) {
-            setCategories(categories.filter(cat => cat.id !== id));
+    const handleDelete = async (id) => {
+        if (window.confirm('Yakin ingin menghapus kategori ini? Ini tidak dapat diurungkan.')) {
+            try {
+                // 4. DELETE: Hapus kategori dari Supabase berdasarkan ID
+                const { error } = await supabase
+                    .from('Category')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+                fetchCategories(); // Muat ulang daftar kategori setelah berhasil
+            } catch (error) {
+                console.error('Gagal menghapus kategori:', error);
+                alert(`Error: ${error.message}`);
+            }
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (currentCategory.id) {
-            setCategories(categories.map(cat => (cat.id === currentCategory.id ? currentCategory : cat)));
-        } else {
-            setCategories([...categories, { ...currentCategory, id: Date.now() }]);
+        try {
+            let error;
+            // 3. CREATE / UPDATE
+            if (currentCategory.id) {
+                // UPDATE: Perbarui kategori yang sudah ada
+                ({ error } = await supabase
+                    .from('Category')
+                    .update({ name: currentCategory.name })
+                    .eq('id', currentCategory.id));
+            } else {
+                // CREATE: Buat kategori baru
+                ({ error } = await supabase
+                    .from('Category')
+                    .insert({ name: currentCategory.name }));
+            }
+
+            if (error) throw error;
+
+            fetchCategories(); // Muat ulang daftar kategori
+            setIsFormVisible(false); // Sembunyikan form
+        } catch (error) {
+            console.error('Gagal menyimpan kategori:', error);
+            alert(`Error: ${error.message}`);
         }
-        setIsFormVisible(false);
     };
 
     return (

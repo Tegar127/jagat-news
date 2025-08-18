@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Edit3, Save, Trash2, Camera } from 'lucide-react';
-
-const API_URL = '/api';
+import { supabase } from '../supabaseClient'; // 1. Impor klien Supabase
 
 const ProfilePage = () => {
     const { user, updateUser } = useAuth();
@@ -26,27 +25,49 @@ const ProfilePage = () => {
     };
 
     const handleSave = async () => {
-        const formData = new FormData();
-        formData.append('name', name);
-        if (avatarFile) {
-            formData.append('avatar', avatarFile);
-        }
-
         try {
-            const response = await fetch(`${API_URL}/users/profile/${user.id}`, {
-                method: 'PUT',
-                body: formData,
-            });
+            let avatarUrl = avatarPreview; // Gunakan preview sebagai fallback
 
-            if (!response.ok) {
-                throw new Error('Gagal memperbarui profil');
+            // 2. Jika ada file baru yang dipilih untuk diunggah
+            if (avatarFile) {
+                // Buat nama file yang unik untuk menghindari tumpang tindih
+                const fileName = `${user.id}/${Date.now()}_${avatarFile.name}`;
+                
+                // Unggah file ke Supabase Storage di bucket 'avatars'
+                const { error: uploadError } = await supabase.storage
+                    .from('avatars')
+                    .upload(fileName, avatarFile, {
+                        cacheControl: '3600',
+                        upsert: true, // Timpa file jika ada dengan nama yang sama
+                    });
+
+                if (uploadError) throw uploadError;
+
+                // Dapatkan URL publik dari file yang baru diunggah
+                const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+                avatarUrl = data.publicUrl;
             }
+            
+            // 3. Perbarui data pengguna di Supabase Auth (untuk metadata)
+            const { data: updatedAuthUser, error: authError } = await supabase.auth.updateUser({
+                data: { avatar_url: avatarUrl, name: name }
+            });
+            if (authError) throw authError;
 
-            const updatedUser = await response.json();
-            updateUser(updatedUser);
+            // 4. Perbarui juga tabel 'User' publik Anda
+            const { error: dbError } = await supabase
+                .from('User')
+                .update({ name: name, avatar: avatarUrl })
+                .eq('id', user.id);
+            if (dbError) throw dbError;
+            
+            // Perbarui state lokal (jika diperlukan, karena onAuthStateChange akan menangani ini)
+            updateUser(updatedAuthUser.user);
             setIsEditing(false);
+
         } catch (error) {
-            console.error(error);
+            console.error("Gagal memperbarui profil:", error);
+            alert(`Error: ${error.message}`);
         }
     };
 
@@ -56,6 +77,7 @@ const ProfilePage = () => {
     };
 
     return (
+        // ... JSX tidak ada perubahan ...
         <div className="container mx-auto p-8">
             <h1 className="text-3xl font-bold mb-6">Profil Saya</h1>
             <div className="bg-white p-6 rounded-lg shadow-md">
