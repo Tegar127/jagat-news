@@ -1,9 +1,6 @@
-// src/components/Admin/PromoAdminPage.jsx
-
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
-
-const API_URL = '/api';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { supabase } from '../../supabaseClient'; // Impor Supabase
 
 const PromoAdminPage = () => {
     const [promos, setPromos] = useState([]);
@@ -11,10 +8,15 @@ const PromoAdminPage = () => {
     const [currentPromo, setCurrentPromo] = useState({ id: null, title: '', subtitle: '', buttonText: '', buttonLink: '', imageUrl: '', isActive: true });
     const [imageFile, setImageFile] = useState(null);
 
+    // READ: Ambil semua data promo dari Supabase
     const fetchPromos = async () => {
-        const response = await fetch(`${API_URL}/promo/all`);
-        const data = await response.json();
-        setPromos(data);
+        try {
+            const { data, error } = await supabase.from('Promo').select('*').order('title');
+            if (error) throw error;
+            setPromos(data);
+        } catch (error) {
+            console.error("Gagal mengambil data promo:", error);
+        }
     };
 
     useEffect(() => {
@@ -40,28 +42,57 @@ const PromoAdminPage = () => {
         setIsFormVisible(true);
     };
 
+    // SUBMIT: Simpan (Create/Update) promo ke Supabase
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        const formData = new FormData();
-        Object.keys(currentPromo).forEach(key => {
-            if (key !== 'id') formData.append(key, currentPromo[key]);
-        });
-        if (imageFile) formData.append('imageFile', imageFile);
+        try {
+            let finalImageUrl = currentPromo.imageUrl;
 
-        const method = currentPromo.id ? 'PUT' : 'POST';
-        const url = currentPromo.id ? `${API_URL}/promo/${currentPromo.id}` : `${API_URL}/promo`;
+            // Jika ada file gambar baru, unggah ke Storage
+            if (imageFile) {
+                const fileName = `promo/${Date.now()}_${imageFile.name}`;
+                const { error: uploadError } = await supabase.storage.from('berita').upload(fileName, imageFile, { upsert: true });
+                if (uploadError) throw uploadError;
 
-        await fetch(url, { method, body: formData });
+                const { data } = supabase.storage.from('berita').getPublicUrl(fileName);
+                finalImageUrl = data.publicUrl;
+            }
+            
+            const promoData = {
+                title: currentPromo.title,
+                subtitle: currentPromo.subtitle,
+                buttonText: currentPromo.buttonText,
+                buttonLink: currentPromo.buttonLink,
+                isActive: currentPromo.isActive,
+                imageUrl: finalImageUrl,
+            };
 
-        fetchPromos();
-        setIsFormVisible(false);
+            if (currentPromo.id) { // Mode Update
+                const { error } = await supabase.from('Promo').update(promoData).eq('id', currentPromo.id);
+                if (error) throw error;
+            } else { // Mode Create
+                const { error } = await supabase.from('Promo').insert(promoData);
+                if (error) throw error;
+            }
+
+            fetchPromos();
+            setIsFormVisible(false);
+
+        } catch (error) {
+            alert('Gagal menyimpan promo: ' + error.message);
+        }
     };
 
+    // DELETE: Hapus promo dari Supabase
     const handleDelete = async (id) => {
         if (window.confirm('Yakin ingin menghapus promo ini?')) {
-            await fetch(`${API_URL}/promo/${id}`, { method: 'DELETE' });
-            fetchPromos();
+            try {
+                const { error } = await supabase.from('Promo').delete().eq('id', id);
+                if (error) throw error;
+                fetchPromos();
+            } catch (error) {
+                alert('Gagal menghapus promo: ' + error.message);
+            }
         }
     };
 
@@ -79,15 +110,13 @@ const PromoAdminPage = () => {
                 <div className="bg-white p-6 rounded-xl shadow-md border mb-6">
                     <h2 className="text-xl font-bold mb-4">{currentPromo.id ? 'Edit Promo' : 'Tambah Promo Baru'}</h2>
                     <form onSubmit={handleSubmit}>
-                        {/* Fields for Title, Subtitle, Button Text, Button Link */}
                         <input name="title" value={currentPromo.title} onChange={handleInputChange} placeholder="Judul Promo" className="w-full p-2 border rounded mb-4" required />
                         <input name="subtitle" value={currentPromo.subtitle} onChange={handleInputChange} placeholder="Sub Judul" className="w-full p-2 border rounded mb-4" />
                         <input name="buttonText" value={currentPromo.buttonText} onChange={handleInputChange} placeholder="Teks Tombol" className="w-full p-2 border rounded mb-4" />
                         <input name="buttonLink" value={currentPromo.buttonLink} onChange={handleInputChange} placeholder="Link Tombol (contoh: /berita)" className="w-full p-2 border rounded mb-4" />
 
-                        {/* Image URL or Upload */}
-                        <input name="imageUrl" value={currentPromo.imageUrl} onChange={handleInputChange} placeholder="URL Gambar (Opsional)" className="w-full p-2 border rounded mb-2" />
-                        <p className="text-center text-gray-500 my-2">ATAU</p>
+                        <input name="imageUrl" value={currentPromo.imageUrl} onChange={handleInputChange} placeholder="URL Gambar (Jika tidak mengunggah file baru)" className="w-full p-2 border rounded mb-2" />
+                        <p className="text-center text-gray-500 my-2">ATAU UNGGAH FILE BARU</p>
                         <input type="file" name="imageFile" onChange={handleFileChange} className="w-full p-2 border rounded mb-4" />
                         
                         <div className="mb-4">
