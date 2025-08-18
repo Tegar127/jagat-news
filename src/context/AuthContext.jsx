@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // Impor klien Supabase yang baru dibuat
+import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -10,27 +10,48 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-
-    // State untuk modal (tidak berubah)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('login');
 
     useEffect(() => {
-        // 1. Cek sesi pengguna saat aplikasi pertama kali dimuat
-        const getSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user ?? null);
+        const handleAuthStateChange = async (session) => {
+            if (session?.user) {
+                // Pengguna berhasil login. Sekarang, ambil profil mereka dari tabel "User".
+                const { data: profile, error } = await supabase
+                    .from('User')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (error) {
+                    console.error('Gagal mengambil profil pengguna:', error);
+                }
+
+                // Gabungkan data autentikasi dengan data profil (termasuk peran/role)
+                setUser({
+                    ...session.user,
+                    ...profile // Ini akan menambahkan properti 'name', 'role', 'avatar', dll.
+                });
+            } else {
+                // Pengguna logout
+                setUser(null);
+            }
             setLoading(false);
         };
 
-        getSession();
+        // Cek sesi yang ada saat aplikasi pertama kali dimuat
+        const getInitialSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            await handleAuthStateChange(session);
+        };
 
-        // 2. Dengarkan perubahan status autentikasi (login, logout)
+        getInitialSession();
+
+        // Dengarkan perubahan status autentikasi (login, logout)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
+            handleAuthStateChange(session);
         });
 
-        // 3. Hentikan listener saat komponen tidak lagi digunakan
         return () => subscription.unsubscribe();
     }, []);
 
@@ -41,8 +62,7 @@ export const AuthProvider = ({ children }) => {
 
     const closeModal = () => setIsModalOpen(false);
 
-    // --- FUNGSI AUTENTIKASI BARU DENGAN SUPABASE ---
-
+    // Fungsi login, register, dan logout tidak perlu diubah
     const login = async (email, password) => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw new Error(error.message);
@@ -59,10 +79,7 @@ export const AuthProvider = ({ children }) => {
             email,
             password,
             options: {
-                data: {
-                    // Menyimpan metadata tambahan saat registrasi
-                    name: name,
-                }
+                data: { name: name }
             }
         });
         if (error) throw new Error(error.message);
@@ -75,9 +92,8 @@ export const AuthProvider = ({ children }) => {
         navigate('/');
     };
     
-    // Fungsi ini tidak lagi terlalu relevan karena state user dikelola otomatis
     const updateUser = (newUserData) => {
-        // Logika pembaruan manual bisa ditambahkan di sini jika perlu
+        setUser(prevUser => ({ ...prevUser, ...newUserData }));
     };
 
     const value = {
@@ -87,7 +103,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         loginWithGoogle,
-        register, // Tambahkan fungsi register ke context
+        register,
         updateUser,
         isModalOpen,
         modalType,
