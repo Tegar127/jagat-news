@@ -14,6 +14,7 @@ import BeritaDetailPage from './pages/BeritaDetailPage';
 import AboutPage from './pages/AboutPage';
 import LoginModal from './components/LoginModal'; // <-- Impor komponen modal baru
 import ProfilePage from './pages/ProfilePage';
+import SearchResultsPage from './pages/SearchResultsPage';
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -53,10 +54,11 @@ const AppContent = () => {
     return (
         <Routes>
             {/* Rute publik yang menggunakan PublicLayout */}
-            <Route element={<PublicLayout />}>
+             <Route element={<PublicLayout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/berita" element={<BeritaPage />} />
                 <Route path="/berita/:id" element={<BeritaDetailPage />} />
+                <Route path="/search" element={<SearchResultsPage />} /> {/* Tambahkan rute ini */}
                 <Route path="/kontak" element={<KontakPage />} />
                 <Route path="/tentang" element={<AboutPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

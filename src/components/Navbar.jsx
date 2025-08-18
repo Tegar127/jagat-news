@@ -1,14 +1,23 @@
-// tegar127/jagat-news/jagat-news-484ca85cf68061a08fe7435d5b0a49863b94f172/src/components/Navbar.jsx
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Menu, X, Newspaper, UserCircle, LogOut, User, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
     const { user, logout, openModal } = useAuth();
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+            setSearchTerm('');
+            setIsMenuOpen(false); // Tutup menu mobile setelah search
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -18,15 +27,14 @@ const Navbar = () => {
     const renderProfileDropdown = () => (
         <div className="relative">
             <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center focus:outline-none">
-                {user.avatar ? (
-                    <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
+                {user?.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                     <UserCircle className="w-8 h-8 text-gray-600 hover:text-blue-600" />
                 )}
             </button>
             {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
-                    {/* Tampilkan menu Dashboard jika role-nya ADMIN atau ADMINISTRATOR */}
                     {(user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR') && (
                         <Link to="/admin/dashboard" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
                             <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -59,7 +67,6 @@ const Navbar = () => {
 
     return (
         <header className="bg-white shadow-sm sticky top-0 z-50">
-            {/* ... (sisa kode tidak berubah) ... */}
             <div className="container mx-auto px-4">
                 {/* Desktop Header */}
                 <div className="hidden lg:flex items-center justify-between py-4">
@@ -74,14 +81,16 @@ const Navbar = () => {
                         <Link to="/kontak" className="hover:text-blue-600">Kontak</Link>
                     </nav>
                     <div className="flex items-center gap-4">
-                        <div className="relative">
+                        <form onSubmit={handleSearch} className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Cari berita..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                        </div>
+                        </form>
                         {user ? renderProfileDropdown() : renderAuthButtons()}
                     </div>
                 </div>
@@ -104,13 +113,25 @@ const Navbar = () => {
             {/* Mobile Menu */}
             {isMenuOpen && (
                 <div className="lg:hidden bg-white border-t border-gray-200">
-                    <nav className="flex flex-col gap-1 px-4 py-4">
+                    <div className="px-4 pt-4 pb-2">
+                        <form onSubmit={handleSearch} className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Cari berita..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </form>
+                    </div>
+                    <nav className="flex flex-col gap-1 px-4 py-2">
                         <Link to="/" className="text-gray-700 font-medium p-3 rounded-md hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Beranda</Link>
                         <Link to="/berita" className="text-gray-700 font-medium p-3 rounded-md hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Berita</Link>
                         <Link to="/tentang" className="text-gray-700 font-medium p-3 rounded-md hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Tentang Kami</Link>
                         <Link to="/kontak" className="text-gray-700 font-medium p-3 rounded-md hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Kontak</Link>
                         {!user && (
-                            <div className="pt-4 mt-4 border-t border-gray-200 flex gap-4">
+                            <div className="pt-4 mt-2 border-t border-gray-200 flex gap-4">
                                 <button onClick={() => { openModal('login'); setIsMenuOpen(false); }} className="flex-1 text-center px-5 py-2.5 rounded-lg font-bold text-sm border border-gray-300 text-gray-700 hover:bg-gray-100">
                                     Masuk
                                 </button>
