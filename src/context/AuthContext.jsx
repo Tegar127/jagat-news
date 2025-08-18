@@ -1,5 +1,3 @@
-// src/context/AuthContext.jsx
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -39,7 +37,6 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         };
 
-        // Cek sesi yang ada saat aplikasi pertama kali dimuat
         const getInitialSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             await handleAuthStateChange(session);
@@ -47,7 +44,6 @@ export const AuthProvider = ({ children }) => {
 
         getInitialSession();
 
-        // Dengarkan perubahan status autentikasi (login, logout)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             handleAuthStateChange(session);
         });
@@ -62,7 +58,6 @@ export const AuthProvider = ({ children }) => {
 
     const closeModal = () => setIsModalOpen(false);
 
-    // Fungsi login, register, dan logout tidak perlu diubah
     const login = async (email, password) => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw new Error(error.message);
