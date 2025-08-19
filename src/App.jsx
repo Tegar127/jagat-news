@@ -14,6 +14,7 @@ import LoginModal from './components/LoginModal';
 import ProfilePage from './pages/ProfilePage';
 import SearchResultsPage from './pages/SearchResultsPage'; // Impor Halaman Hasil Pencarian
 import KontakPage from './pages/KontakPage'; // Impor Halaman Kontak (Chat)
+import ChatWidget from './components/ChatWidget';
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -37,6 +38,7 @@ const PublicLayout = ({ theme, toggleTheme }) => (
         </main>
         <Footer />
         <LoginModal />
+        <ChatWidget /> 
     </div>
 );
 
