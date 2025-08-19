@@ -1,19 +1,24 @@
-// src/components/Admin/UserAdminPage.jsx
-
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-
-const API_URL = '/api';
+import { Edit, Save, X } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
 
 const UserAdminPage = () => {
     const [users, setUsers] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
-    const [currentUser, setCurrentUser] = useState({ id: null, name: '', email: '', password: '', role: 'ADMIN' });
+    const [currentUser, setCurrentUser] = useState({ id: null, name: '', email: '', role: 'USER' });
 
+    // Mengambil semua data pengguna dari tabel "User"
     const fetchUsers = async () => {
-        const response = await fetch(`${API_URL}/users`);
-        const data = await response.json();
-        setUsers(data);
+        try {
+            const { data, error } = await supabase
+                .from('User')
+                .select('id, name, email, role, avatar')
+                .order('name', { ascending: true });
+            if (error) throw error;
+            setUsers(data);
+        } catch (error) {
+            console.error("Gagal mengambil data pengguna:", error);
+        }
     };
 
     useEffect(() => {
@@ -25,82 +30,82 @@ const UserAdminPage = () => {
         setCurrentUser({ ...currentUser, [name]: value });
     };
 
-    const handleAddNew = () => {
-        setCurrentUser({ id: null, name: '', email: '', password: '', role: 'ADMIN' });
-        setIsFormVisible(true);
-    };
-
     const handleEdit = (user) => {
-        setCurrentUser({ ...user, password: '' }); // Kosongkan password saat edit
+        setCurrentUser(user);
         setIsFormVisible(true);
     };
 
+    // Menyimpan perubahan (hanya peran) ke Supabase
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const method = currentUser.id ? 'PUT' : 'POST';
-        const url = currentUser.id ? `${API_URL}/users/${currentUser.id}` : `${API_URL}/users`;
+        try {
+            const { error } = await supabase
+                .from('User')
+                .update({ role: currentUser.role })
+                .eq('id', currentUser.id);
 
-        await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentUser),
-        });
+            if (error) throw error;
 
-        fetchUsers();
-        setIsFormVisible(false);
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm('Yakin ingin menghapus pengguna ini?')) {
-            await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
-            fetchUsers();
+            await fetchUsers();
+            setIsFormVisible(false);
+        } catch (error) {
+            alert("Gagal memperbarui peran pengguna: " + error.message);
         }
     };
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Kelola Pengguna</h1>
-                <button onClick={handleAddNew} className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">
-                    <PlusCircle size={20} className="mr-2" />
-                    Tambah Pengguna
-                </button>
+                <h1 className="text-2xl font-bold text-foreground">Kelola Pengguna</h1>
             </div>
 
             {isFormVisible && (
-                <div className="bg-white p-6 rounded-xl shadow-md border mb-6">
-                    <h2 className="text-xl font-bold mb-4">{currentUser.id ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h2>
+                <div className="bg-card p-6 rounded-xl shadow-md border border-custom mb-6">
+                    <h2 className="text-xl font-bold mb-4">Edit Peran untuk: {currentUser.name}</h2>
                     <form onSubmit={handleSubmit}>
-                        <input name="name" value={currentUser.name} onChange={handleInputChange} placeholder="Nama Lengkap" className="w-full p-2 border rounded mb-4" required />
-                        <input name="email" value={currentUser.email} onChange={handleInputChange} placeholder="Alamat Email" type="email" className="w-full p-2 border rounded mb-4" required />
-                        <input name="password" value={currentUser.password} onChange={handleInputChange} placeholder={currentUser.id ? "Kosongkan jika tidak ganti" : "Password"} type="password" className="w-full p-2 border rounded mb-4" required={!currentUser.id} />
-                        <select name="role" value={currentUser.role} onChange={handleInputChange} className="w-full p-2 border rounded mb-4">
-                            <option value="ADMIN">Admin</option>
-                            <option value="ADMINISTRATOR">Administrator</option>
-                            <option value="USER">User</option>
-                        </select>
+                        <div className="mb-4">
+                            <label className="block text-sm font-bold mb-2">Email</label>
+                            <p className="text-muted-foreground">{currentUser.email}</p>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-bold mb-2">Peran (Role)</label>
+                            <select 
+                                name="role" 
+                                value={currentUser.role} 
+                                onChange={handleInputChange} 
+                                className="w-full p-2 border border-custom rounded bg-input"
+                            >
+                                <option value="USER">User</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="ADMINISTRATOR">Administrator</option>
+                            </select>
+                        </div>
                         <div className="flex justify-end gap-4">
-                           <button type="button" onClick={() => setIsFormVisible(false)} className="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg">Batal</button>
-                           <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">Simpan</button>
+                           <button type="button" onClick={() => setIsFormVisible(false)} className="flex items-center bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">
+                                <X size={18} className="mr-2" /> Batal
+                           </button>
+                           <button type="submit" className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">
+                                <Save size={18} className="mr-2" /> Simpan Perubahan
+                           </button>
                         </div>
                     </form>
                 </div>
             )}
 
-            <div className="bg-white p-6 rounded-xl shadow-md border overflow-x-auto">
+            <div className="bg-card p-6 rounded-xl shadow-md border border-custom overflow-x-auto">
                 <table className="min-w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-background">
                         <tr>
                             <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Nama</th>
                             <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Email</th>
-                            <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Role</th>
+                            <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Peran</th>
                             <th className="text-left py-3 px-4 uppercase font-semibold text-sm">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="text-muted-foreground">
                         {users.map(user => (
-                            <tr key={user.id} className="border-b hover:bg-gray-50">
-                                <td className="py-3 px-4">{user.name}</td>
+                            <tr key={user.id} className="border-b border-custom hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <td className="py-3 px-4 text-foreground font-medium">{user.name}</td>
                                 <td className="py-3 px-4">{user.email}</td>
                                 <td className="py-3 px-4">
                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -113,7 +118,6 @@ const UserAdminPage = () => {
                                 </td>
                                 <td className="py-3 px-4 flex gap-2">
                                     <button onClick={() => handleEdit(user)} className="text-blue-600 hover:text-blue-800"><Edit size={18}/></button>
-                                    <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18}/></button>
                                 </td>
                             </tr>
                         ))}
