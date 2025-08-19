@@ -27,7 +27,7 @@ const ChatWidget = () => {
         if (isAuthenticated && isOpen) {
             const fetchMessages = async () => {
                 const { data, error } = await supabase
-                    .from('Messages')
+                    .from('messages')
                     .select('*')
                     .eq('sender_id', user.id)
                     .order('created_at', { ascending: true });
