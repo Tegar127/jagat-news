@@ -18,16 +18,15 @@ export const AuthProvider = ({ children }) => {
                 .from('User')
                 .select('*')
                 .eq('id', session.user.id)
-                .single(); // .single() akan error jika tidak ada data
+                .single();
 
-            // Jika ada error (misalnya profil belum dibuat), jangan hentikan proses
-            if (error && error.code !== 'PGRST116') { // Abaikan error 'PGRST116' (No rows found)
+            if (error && error.code !== 'PGRST116') { // Abaikan error "No rows found"
                 console.error('Gagal mengambil profil pengguna:', error);
             }
 
             setUser({
                 ...session.user,
-                ...(profile || {}) // Gabungkan profil, atau objek kosong jika profil belum ada
+                ...(profile || {}) // Selalu gabungkan, bahkan jika profil null
             });
         } else {
             setUser(null);
