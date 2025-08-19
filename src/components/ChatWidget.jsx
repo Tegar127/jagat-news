@@ -1,22 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { Send, Headphones, X } from 'lucide-react';
+import { Send, Headphones, X, Paperclip, FileText } from 'lucide-react';
 
 const ChatWidget = () => {
     const { user, isAuthenticated, openModal } = useAuth();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    const welcomeMessage = {
+        id: 'welcome',
+        is_admin_response: true,
+        content: "Halo! Ada yang bisa kami bantu? Silakan tinggalkan pertanyaan Anda di sini.",
+        message_type: 'text'
+    };
+
     useEffect(() => {
         if (isAuthenticated && isOpen) {
-            // Ambil pesan awal
             const fetchMessages = async () => {
                 const { data, error } = await supabase
                     .from('Messages')
@@ -25,11 +33,10 @@ const ChatWidget = () => {
                     .order('created_at', { ascending: true });
 
                 if (error) console.error('Error fetching messages:', error);
-                else setMessages(data);
+                else setMessages([welcomeMessage, ...data]); // Tambahkan pesan selamat datang
             };
             fetchMessages();
 
-            // Dengarkan pesan baru secara real-time
             const channel = supabase.channel(`chat:${user.id}`)
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Messages', filter: `sender_id=eq.${user.id}` },
                     (payload) => {
@@ -41,6 +48,8 @@ const ChatWidget = () => {
             return () => {
                 supabase.removeChannel(channel);
             };
+        } else if (isOpen) {
+            setMessages([welcomeMessage]);
         }
     }, [isAuthenticated, user, isOpen]);
 
@@ -51,24 +60,50 @@ const ChatWidget = () => {
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (newMessage.trim() === '') return;
-
-        const messageData = {
-            content: newMessage,
-            sender_id: user.id,
-            is_admin_response: false
-        };
-        
-        setNewMessage(''); // Hapus input segera untuk UX yang lebih baik
-        const { error } = await supabase.from('Messages').insert(messageData);
-        if (error) {
-            console.error('Error sending message:', error);
-            setNewMessage(messageData.content); // Kembalikan pesan jika terjadi error
-        }
+        const tempMessage = newMessage;
+        setNewMessage('');
+        const { error } = await supabase.from('Messages').insert({ 
+            content: tempMessage, 
+            sender_id: user.id, 
+            is_admin_response: false, 
+            message_type: 'text' 
+        });
+        if (error) setNewMessage(tempMessage);
     };
 
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const fileName = `${user.id}/${Date.now()}_${file.name}`;
+            const { error: uploadError } = await supabase.storage
+                .from('chat-attachments')
+                .upload(fileName, file);
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('chat-attachments').getPublicUrl(fileName);
+            
+            const { error: insertError } = await supabase.from('Messages').insert({
+                content: file.name,
+                sender_id: user.id,
+                is_admin_response: false,
+                message_type: file.type.startsWith('image/') ? 'image' : 'file',
+                file_url: data.publicUrl
+            });
+            if (insertError) throw insertError;
+
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        } finally {
+            setUploading(false);
+            fileInputRef.current.value = null; // Reset input file
+        }
+    };
+    
     return (
         <div className="fixed bottom-5 right-5 z-50">
-            {/* Jendela Chat */}
             <div className={`
                 w-[calc(100vw-2.5rem)] max-w-xs bg-card rounded-lg shadow-2xl flex flex-col h-[60vh]
                 transition-all duration-300 ease-in-out
@@ -76,39 +111,41 @@ const ChatWidget = () => {
             `}>
                 <div className="bg-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
                     <button onClick={() => setIsOpen(false)} className="hover:opacity-75"><X size={20} /></button>
-                    <div className="flex items-center space-x-3">
-                        <div>
-                            <h2 className="text-md font-bold text-right">Chat dengan Admin</h2>
-                            <p className="text-xs opacity-90 text-right">Online</p>
-                        </div>
-                        <div className="relative">
-                            <img src="https://placehold.co/40x40/FFFFFF/3B82F6?text=A" alt="Admin" className="w-10 h-10 rounded-full" />
-                            <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-blue-600"></span>
-                        </div>
+                    <div className="text-right">
+                        <h2 className="text-md font-bold">Chat dengan Admin</h2>
                     </div>
                 </div>
 
                 <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-                    {!isAuthenticated ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                            <h3 className="text-md font-semibold text-card-foreground">Masuk untuk memulai percakapan</h3>
-                            <button onClick={() => openModal('login')} className="mt-2 text-sm font-bold text-blue-500 hover:underline">Klik di sini untuk Masuk</button>
-                        </div>
-                    ) : (
-                        messages.map((msg) => (
-                            <div key={msg.id} className={`flex items-end gap-2.5 ${msg.is_admin_response ? 'justify-start' : 'justify-end'}`}>
-                                <div className={`flex flex-col w-full max-w-xs leading-1.5 p-3 rounded-xl ${msg.is_admin_response ? 'rounded-es-none bg-gray-100 dark:bg-gray-700' : 'rounded-ee-none bg-blue-600 text-white'}`}>
+                    {messages.map((msg, index) => (
+                        <div key={msg.id || `msg-${index}`} className={`flex items-end gap-2.5 ${msg.is_admin_response ? 'justify-start' : 'justify-end'}`}>
+                            <div className={`flex flex-col w-full max-w-xs leading-1.5 p-3 rounded-xl ${msg.is_admin_response ? 'rounded-es-none bg-gray-100 dark:bg-gray-700' : 'rounded-ee-none bg-blue-600 text-white'}`}>
+                                {msg.message_type === 'image' ? (
+                                    <a href={msg.file_url} target="_blank" rel="noopener noreferrer">
+                                        <img src={msg.file_url} alt={msg.content} className="rounded-lg max-w-full h-auto" />
+                                    </a>
+                                ) : msg.message_type === 'file' ? (
+                                    <a href={msg.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
+                                        <FileText className="w-6 h-6 flex-shrink-0" />
+                                        <span className="text-sm font-medium truncate">{msg.content}</span>
+                                    </a>
+                                ) : (
                                     <p className="text-sm font-normal">{msg.content}</p>
-                                </div>
+                                )}
                             </div>
-                        ))
-                    )}
+                        </div>
+                    ))}
+                    {uploading && <div className="text-center text-muted-foreground text-sm">Mengunggah file...</div>}
                     <div ref={messagesEndRef} />
                 </div>
 
                 {isAuthenticated && (
                     <div className="p-3 border-t border-custom">
                         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+                            <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+                            <button type="button" onClick={() => fileInputRef.current.click()} disabled={uploading} className="p-2 text-muted-foreground hover:text-foreground">
+                                <Paperclip size={20} />
+                            </button>
                             <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Ketik pesan..." className="w-full p-2 bg-input border border-custom rounded-full focus:outline-none" />
                             <button type="submit" className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition"><Send size={18} /></button>
                         </form>
@@ -116,10 +153,7 @@ const ChatWidget = () => {
                 )}
             </div>
             
-            {/* Tombol Pengalih */}
-            <button onClick={() => setIsOpen(!isOpen)} 
-                className="bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-all duration-300 hover:scale-110 mt-4 float-right"
-            >
+            <button onClick={() => setIsOpen(!isOpen)} className="bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-all duration-300 hover:scale-110 mt-4 float-right">
                 {isOpen ? <X size={28} /> : <Headphones size={28} />}
             </button>
         </div>
