@@ -11,31 +11,29 @@ export const AuthProvider = ({ children }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('login');
 
-    useEffect(() => {
-        const handleAuthStateChange = async (session) => {
-            if (session?.user) {
-                // Pengguna berhasil login. Sekarang, ambil profil mereka dari tabel "User".
-                const { data: profile, error } = await supabase
-                    .from('User')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
+   useEffect(() => {
+    const handleAuthStateChange = async (session) => {
+        if (session?.user) {
+            const { data: profile, error } = await supabase
+                .from('User')
+                .select('*')
+                .eq('id', session.user.id)
+                .single(); // .single() akan error jika tidak ada data
 
-                if (error) {
-                    console.error('Gagal mengambil profil pengguna:', error);
-                }
-
-                // Gabungkan data autentikasi dengan data profil (termasuk peran/role)
-                setUser({
-                    ...session.user,
-                    ...profile // Ini akan menambahkan properti 'name', 'role', 'avatar', dll.
-                });
-            } else {
-                // Pengguna logout
-                setUser(null);
+            // Jika ada error (misalnya profil belum dibuat), jangan hentikan proses
+            if (error && error.code !== 'PGRST116') { // Abaikan error 'PGRST116' (No rows found)
+                console.error('Gagal mengambil profil pengguna:', error);
             }
-            setLoading(false);
-        };
+
+            setUser({
+                ...session.user,
+                ...(profile || {}) // Gabungkan profil, atau objek kosong jika profil belum ada
+            });
+        } else {
+            setUser(null);
+        }
+        setLoading(false);
+    };
 
         const getInitialSession = async () => {
             const { data: { session } } = await supabase.auth.getSession();
