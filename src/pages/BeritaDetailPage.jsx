@@ -82,7 +82,6 @@ const CommentForm = ({ postId, onCommentPosted }) => {
     );
 };
 
-// Komponen daftar komentar yang sudah diperbarui dengan fitur edit dan hapus
 const CommentList = ({ comments, fetchComments }) => {
     const { user } = useAuth();
     const [editingCommentId, setEditingCommentId] = useState(null);
@@ -131,7 +130,7 @@ const CommentList = ({ comments, fetchComments }) => {
                     <div className="flex-1">
                         <div className="bg-background p-4 rounded-lg border border-custom">
                             <div className="flex justify-between items-center">
-                                <p className="font-bold text-card-foreground">{comment.User?.name || 'Pengguna Terhapus'}</p>
+                                <p className="font-bold text-card-foreground">{comment.User?.name || 'Pengguna'}</p>
                                 {user?.id === comment.userId && editingCommentId !== comment.id && (
                                     <div className="flex items-center space-x-2">
                                         <button onClick={() => handleEditClick(comment)} className="text-muted-foreground hover:text-foreground"><Edit size={16} /></button>
@@ -168,7 +167,7 @@ const CommentList = ({ comments, fetchComments }) => {
 
 export default function BeritaDetailPage() {
     const { id } = useParams();
-    const { isAuthenticated, user, openModal } = useAuth();
+    const { isAuthenticated, openModal } = useAuth();
     const [news, setNews] = useState(null);
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -192,16 +191,11 @@ export default function BeritaDetailPage() {
             try {
                 const { data, error } = await supabase
                     .from('Post')
-                    .select(`*, author:User ( name ), category:Category ( name ), images:Image ( id, url )`)
+                    .select(`*, author:User(name), category:Category(name), images:Image(id, url)`)
                     .eq('id', id)
                     .single();
-
-                if (error) {
-                    setNews(null);
-                    throw error;
-                }
+                if (error) throw error;
                 setNews(data);
-
                 supabase.functions.invoke('increment-view-count', { body: { postId: id } });
             } catch (error) {
                 console.error("Gagal mengambil detail berita:", error);
