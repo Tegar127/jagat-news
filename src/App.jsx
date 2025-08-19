@@ -1,3 +1,5 @@
+// File: src/App.jsx
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Outlet, Navigate } from 'react-router-dom';
 
@@ -8,10 +10,10 @@ import HomePage from './pages/HomePage';
 import BeritaPage from './pages/BeritaPage';
 import BeritaDetailPage from './pages/BeritaDetailPage';
 import AboutPage from './pages/AboutPage';
-import LoginModal from './components/LoginModal'; // <-- Impor komponen modal baru
+import LoginModal from './components/LoginModal';
 import ProfilePage from './pages/ProfilePage';
-import SearchResultsPage from './pages/SearchResultsPage';
-import ChatAdminPage from './components/Admin/ChatAdminPage';
+import SearchResultsPage from './pages/SearchResultsPage'; // Impor Halaman Hasil Pencarian
+import KontakPage from './pages/KontakPage'; // Impor Halaman Kontak (Chat)
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -20,24 +22,16 @@ import BeritaAdminPage from './components/Admin/BeritaAdminPage';
 import KategoriAdminPage from './components/Admin/KategoriAdminPage';
 import UserAdminPage from './components/Admin/UserAdminPage';
 import PromoAdminPage from './components/Admin/PromoAdminPage';
+import ChatAdminPage from './components/Admin/ChatAdminPage'; // Impor Halaman Chat Admin
 
 // Impor dari Context dan Protected Route
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Komponen placeholder untuk halaman yang belum dibuat
-const KontakPage = () => (
-    <div className="container mx-auto p-8 text-center">
-        <h1 className="text-3xl font-bold">Halaman Kontak</h1>
-        <p className="mt-4">Informasi kontak akan ditampilkan di sini.</p>
-        <Link to="/" className="text-blue-500 hover:underline mt-6 inline-block">Kembali ke Beranda</Link>
-    </div>
-);
-
 // Layout untuk halaman publik (yang memiliki Navbar dan Footer)
-const PublicLayout = ({ theme, toggleTheme }) => ( // Terima props tema
-    <div className="font-sans antialiased flex flex-col min-h-screen">
-        <Navbar theme={theme} toggleTheme={toggleTheme} /> {/* Teruskan props ke Navbar */}
+const PublicLayout = ({ theme, toggleTheme }) => (
+    <div className="bg-background font-sans antialiased flex flex-col min-h-screen">
+        <Navbar theme={theme} toggleTheme={toggleTheme} />
         <main className="flex-grow">
             <Outlet />
         </main>
@@ -46,25 +40,19 @@ const PublicLayout = ({ theme, toggleTheme }) => ( // Terima props tema
     </div>
 );
 
-const AppContent = ({ theme, toggleTheme }) => { // Terima props tema
+const AppContent = ({ theme, toggleTheme }) => {
     return (
         <Routes>
+            {/* Rute publik yang menggunakan PublicLayout */}
             <Route element={<PublicLayout theme={theme} toggleTheme={toggleTheme} />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/berita" element={<BeritaPage />} />
                 <Route path="/berita/:id" element={<BeritaDetailPage />} />
-                <Route path="/search" element={<SearchResultsPage />} /> {/* Tambahkan rute ini */}
+                <Route path="/search" element={<SearchResultsPage />} />
                 <Route path="/kontak" element={<KontakPage />} />
                 <Route path="/tentang" element={<AboutPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="users" element={<UserAdminPage />} />
-                <Route path="chat" element={<ChatAdminPage />} /> {/* Tambahkan rute ini */}
-        </Route>
-            
-
-            {/* HAPUS Rute yang tidak menggunakan layout (Login & Daftar) */}
-            {/* <Route path="/login" element={<LoginPage />} /> */}
-            {/* <Route path="/daftar" element={<DaftarPage />} /> */}
+            </Route>
 
             {/* Rute admin yang dilindungi dan menggunakan AdminLayout */}
             <Route
@@ -81,6 +69,7 @@ const AppContent = ({ theme, toggleTheme }) => { // Terima props tema
                 <Route path="berita" element={<BeritaAdminPage />} />
                 <Route path="kategori" element={<KategoriAdminPage />} />
                 <Route path="users" element={<UserAdminPage />} />
+                <Route path="chat" element={<ChatAdminPage />} />
             </Route>
             
             <Route path="*" element={
@@ -95,7 +84,7 @@ const AppContent = ({ theme, toggleTheme }) => { // Terima props tema
 };
 
 export default function App() {
-    // Logika untuk mengelola tema
+    // Logika untuk mengelola state tema (dark/light mode)
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem('theme') || 'light';
     });
@@ -107,6 +96,7 @@ export default function App() {
     };
 
     useEffect(() => {
+        // Terapkan tema ke elemen root HTML
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
