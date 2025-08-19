@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
@@ -19,6 +19,9 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
         { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita", roles: ['ADMIN', 'ADMINISTRATOR'] },
         { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori", roles: ['ADMIN', 'ADMINISTRATOR'] },
         // Menu ini hanya untuk ADMINISTRATOR
+        { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna", roles: ['ADMINISTRATOR'] },
+        { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori", roles: ['ADMIN', 'ADMINISTRATOR'] },
+        { to: "/admin/chat", icon: <MessageSquare size={20} />, text: "Chat", roles: ['ADMIN', 'ADMINISTRATOR'] }, // Tambahkan menu ini
         { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna", roles: ['ADMINISTRATOR'] },
     ];
 

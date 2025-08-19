@@ -11,6 +11,7 @@ import AboutPage from './pages/AboutPage';
 import LoginModal from './components/LoginModal'; // <-- Impor komponen modal baru
 import ProfilePage from './pages/ProfilePage';
 import SearchResultsPage from './pages/SearchResultsPage';
+import ChatAdminPage from './components/Admin/ChatAdminPage';
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -56,7 +57,10 @@ const AppContent = ({ theme, toggleTheme }) => { // Terima props tema
                 <Route path="/kontak" element={<KontakPage />} />
                 <Route path="/tentang" element={<AboutPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-            </Route>
+                <Route path="users" element={<UserAdminPage />} />
+                <Route path="chat" element={<ChatAdminPage />} /> {/* Tambahkan rute ini */}
+        </Route>
+            
 
             {/* HAPUS Rute yang tidak menggunakan layout (Login & Daftar) */}
             {/* <Route path="/login" element={<LoginPage />} /> */}
