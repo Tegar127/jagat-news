@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Lightbulb, Users, Handshake, ShieldCheck, TrendingUp, Sparkles, Target, Eye, Gem, Award, Puzzle, Briefcase, Smile, ChevronRight } from 'lucide-react';
+import { Target, Eye, Gem, Award, Briefcase, ChevronRight } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -56,7 +56,7 @@ const SectionHeader = ({ subTitle, title, aosDelay = 0 }) => (
             </p>
         )}
         <h2
-            className="text-3xl md:text-4xl font-bold text-gray-800"
+            className="text-3xl md:text-4xl font-bold text-foreground"
             data-aos="fade-down"
             data-aos-duration="700"
             data-aos-delay={aosDelay + 100}
@@ -69,23 +69,23 @@ const SectionHeader = ({ subTitle, title, aosDelay = 0 }) => (
 
 const ValueCard = ({ value, index }) => (
     <div
-        className="bg-white rounded-xl p-6 text-center flex flex-col items-center border border-gray-200/80 transform hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-md"
+        className="bg-card rounded-xl p-6 text-center flex flex-col items-center border border-custom transform hover:-translate-y-2 transition-all duration-300 shadow-sm hover:shadow-md"
         data-aos="fade-up"
         data-aos-delay={index * 120}
         data-aos-duration="800"
         data-aos-once="true"
     >
-        <div className="p-4 bg-blue-50 rounded-full mb-4 shadow-sm">
+        <div className="p-4 bg-background rounded-full mb-4 shadow-sm">
             {value.icon}
         </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{value.title}</h3>
-        <p className="text-gray-600 text-center text-sm">{value.description}</p>
+        <h3 className="text-xl font-bold text-card-foreground mb-2">{value.title}</h3>
+        <p className="text-muted-foreground text-center text-sm">{value.description}</p>
     </div>
 );
 
 const TeamMemberCard = ({ member, index }) => (
     <div
-        className="bg-white rounded-xl shadow-md p-6 text-center border border-gray-200/80 transform hover:scale-105 transition-all duration-300 flex flex-col items-center"
+        className="bg-card rounded-xl shadow-md p-6 text-center border border-custom transform hover:scale-105 transition-all duration-300 flex flex-col items-center"
         data-aos="fade-up"
         data-aos-delay={index * 150}
         data-aos-duration="800"
@@ -96,7 +96,7 @@ const TeamMemberCard = ({ member, index }) => (
             alt={member.name}
             className="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-blue-200 shadow-lg"
         />
-        <h3 className="text-xl font-bold text-gray-800">{member.name}</h3>
+        <h3 className="text-xl font-bold text-card-foreground">{member.name}</h3>
         <p className="text-blue-600 text-md font-medium">{member.title}</p>
     </div>
 );
@@ -115,8 +115,7 @@ export default function AboutPage() {
     }, []);
 
     return (
-        <div className="bg-gray-50 text-gray-800">
-            {/* Hero Section */}
+        <div className="bg-background text-foreground">
             <section className="relative py-24 md:py-32 bg-gradient-to-br from-blue-600 to-blue-800 text-white overflow-hidden">
                 <div className="container mx-auto px-4 text-center relative z-10 max-w-4xl">
                     <p
@@ -148,8 +147,7 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Our Story Section */}
-            <section className="py-16 bg-white">
+            <section className="py-16 bg-card">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div>
@@ -160,7 +158,7 @@ export default function AboutPage() {
                                 {aboutContent.ourStory.heading}
                             </p>
                             <h2
-                                className="text-3xl md:text-4xl font-bold text-gray-800 mb-6"
+                                className="text-3xl md:text-4xl font-bold text-card-foreground mb-6"
                                 data-aos="fade-right" data-aos-duration="800" data-aos-delay="100" data-aos-once="true"
                             >
                                 {aboutContent.ourStory.title}
@@ -168,7 +166,7 @@ export default function AboutPage() {
                             {aboutContent.ourStory.paragraphs.map((paragraph, index) => (
                                 <p
                                     key={index}
-                                    className="text-lg text-gray-600 leading-relaxed mb-4"
+                                    className="text-lg text-muted-foreground leading-relaxed mb-4"
                                     data-aos="fade-up" data-aos-duration="800" data-aos-delay={200 + index * 100} data-aos-once="true"
                                 >
                                     {paragraph}
@@ -179,7 +177,7 @@ export default function AboutPage() {
                             <img
                                 src={aboutContent.ourStory.imageUrl}
                                 alt="Our Story"
-                                className="w-full h-auto rounded-xl shadow-xl border border-gray-200"
+                                className="w-full h-auto rounded-xl shadow-xl border border-custom"
                                 data-aos="fade-left" data-aos-duration="900" data-aos-delay="200" data-aos-once="true"
                             />
                         </div>
@@ -187,8 +185,7 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Values Section */}
-            <section className="py-16 bg-gray-50">
+            <section className="py-16 bg-background">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <SectionHeader subTitle="Prinsip Kami" title="Nilai-Nilai Inti Kami" />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -199,8 +196,7 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Team Section */}
-            <section className="py-16 bg-white">
+            <section className="py-16 bg-card">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <SectionHeader subTitle="Orang-Orang di Balik Layar" title="Temui Tim Kami" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -211,7 +207,6 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Call to Action Section */}
             <section className="py-20 bg-blue-700 text-white text-center">
                 <div className="container mx-auto px-4 max-w-3xl">
                     <h2
