@@ -26,11 +26,15 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
             `}
             onClick={() => setSidebarOpen(false)}
         >
-            <div className={`${isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`}>
-                {icon}
-            </div>
-            <span className="ml-3 font-medium">{text}</span>
-            {isActive && <div className="w-2 h-2 rounded-full bg-white ml-auto mr-1"></div>}
+            {({ isActive }) => (
+                <>
+                    <div className={isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'}>
+                        {icon}
+                    </div>
+                    <span className="ml-3 font-medium">{text}</span>
+                    {isActive && <div className="w-2 h-2 rounded-full bg-white ml-auto mr-1"></div>}
+                </>
+            )}
         </NavLink>
     );
 
@@ -50,9 +54,13 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                 </div>
                 
                 <div className="p-5">
-                    <NavLink to="/" className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60 rounded-lg mb-4">
-                        <Home size={16} className="text-blue-600 dark:text-blue-400" />
-                        <span className="ml-2">Kembali ke Situs</span>
+                    <NavLink to="/" className={({ isActive }) => `flex items-center px-4 py-2 text-sm ${isActive ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60'} rounded-lg mb-4`}>
+                        {({ isActive }) => (
+                            <>
+                                <Home size={16} className={isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'} />
+                                <span className="ml-2">Kembali ke Situs</span>
+                            </>
+                        )}
                     </NavLink>
                 </div>
                 
@@ -75,8 +83,13 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
                                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/60"}
                             `}
                         >
-                            <Settings size={20} className="text-blue-600 dark:text-blue-400" />
-                            <span className="ml-3 font-medium">Pengaturan</span>
+                            {({ isActive }) => (
+                                <>
+                                    <Settings size={20} className={isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'} />
+                                    <span className="ml-3 font-medium">Pengaturan</span>
+                                    {isActive && <div className="w-2 h-2 rounded-full bg-white ml-auto mr-1"></div>}
+                                </>
+                            )}
                         </NavLink>
                     </div>
                 </nav>
