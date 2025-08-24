@@ -66,18 +66,34 @@ const CommentForm = ({ postId, onCommentPosted }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="mt-6">
-            <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Tulis komentar Anda..."
-                className="w-full p-3 border border-custom rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows="4"
-                required
-            />
-            <button type="submit" disabled={loading} className="mt-2 bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300">
-                {loading ? 'Mengirim...' : 'Kirim Komentar'}
-            </button>
+        <form onSubmit={handleSubmit} className="mt-8">
+            <div className="flex items-start gap-4">
+                <img src={user?.avatar || 'https://placehold.co/40x40'} alt={user?.name} className="w-10 h-10 rounded-full object-cover" />
+                <div className="flex-1">
+                    <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="Tulis komentar Anda..."
+                        className="w-full p-4 border border-custom rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
+                        rows="4"
+                        required
+                    />
+                    <div className="flex justify-end mt-2">
+                        <button 
+                            type="submit" 
+                            disabled={loading} 
+                            className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70 flex items-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="animate-pulse">•</span>
+                                    <span>Mengirim...</span>
+                                </>
+                            ) : 'Kirim Komentar'}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </form>
     );
 };
@@ -91,7 +107,7 @@ const CommentList = ({ comments, fetchComments }) => {
         setEditingCommentId(comment.id);
         setEditedContent(comment.content);
     };
-
+    
     const handleUpdate = async (commentId) => {
         if (editedContent.trim() === '') return;
         try {
@@ -123,44 +139,74 @@ const CommentList = ({ comments, fetchComments }) => {
     };
 
     return (
-        <div className="space-y-6">
-            {comments.map(comment => (
-                <div key={comment.id} className="flex items-start space-x-4">
-                    <img src={comment.User?.avatar || 'https://placehold.co/40x40'} alt={comment.User?.name} className="w-10 h-10 rounded-full object-cover" />
-                    <div className="flex-1">
-                        <div className="bg-background p-4 rounded-lg border border-custom">
-                            <div className="flex justify-between items-center">
-                                <p className="font-bold text-card-foreground">{comment.User?.name || 'Pengguna'}</p>
-                                {user?.id === comment.userId && editingCommentId !== comment.id && (
-                                    <div className="flex items-center space-x-2">
-                                        <button onClick={() => handleEditClick(comment)} className="text-muted-foreground hover:text-foreground"><Edit size={16} /></button>
-                                        <button onClick={() => handleDelete(comment.id)} className="text-muted-foreground hover:text-red-500"><Trash2 size={16} /></button>
+        <div className="space-y-8">
+            {comments.length === 0 ? (
+                <div className="text-center py-8">
+                    <p className="text-muted-foreground italic">Belum ada komentar. Jadilah yang pertama berkomentar!</p>
+                </div>
+            ) : (
+                comments.map(comment => (
+                    <div key={comment.id} className="flex items-start space-x-4 animate-fadeIn">
+                        <img 
+                            src={comment.User?.avatar || 'https://placehold.co/40x40'} 
+                            alt={comment.User?.name} 
+                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-md" 
+                        />
+                        <div className="flex-1">
+                            <div className="bg-background p-5 rounded-lg border border-custom shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <div className="flex justify-between items-center">
+                                    <p className="font-bold text-card-foreground">{comment.User?.name || 'Pengguna'}</p>
+                                    {user?.id === comment.userId && editingCommentId !== comment.id && (
+                                        <div className="flex items-center space-x-2">
+                                            <button 
+                                                onClick={() => handleEditClick(comment)} 
+                                                className="text-muted-foreground hover:text-indigo-600 transition-colors duration-200 p-1 rounded-full hover:bg-indigo-50"
+                                            >
+                                                <Edit size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(comment.id)} 
+                                                className="text-muted-foreground hover:text-red-500 transition-colors duration-200 p-1 rounded-full hover:bg-red-50"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                {editingCommentId === comment.id ? (
+                                    <div className="mt-3">
+                                        <textarea
+                                            value={editedContent}
+                                            onChange={(e) => setEditedContent(e.target.value)}
+                                            className="w-full p-3 border border-custom rounded-lg bg-input text-foreground focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow duration-200"
+                                            rows="3"
+                                        />
+                                        <div className="flex justify-end space-x-3 mt-3">
+                                            <button 
+                                                onClick={() => setEditingCommentId(null)} 
+                                                className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200 font-medium"
+                                            >
+                                                Batal
+                                            </button>
+                                            <button 
+                                                onClick={() => handleUpdate(comment.id)} 
+                                                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 font-medium"
+                                            >
+                                                Simpan
+                                            </button>
+                                        </div>
                                     </div>
+                                ) : (
+                                    <p className="text-muted-foreground mt-2 leading-relaxed">{comment.content}</p>
                                 )}
                             </div>
-                            {editingCommentId === comment.id ? (
-                                <div className="mt-2">
-                                    <textarea
-                                        value={editedContent}
-                                        onChange={(e) => setEditedContent(e.target.value)}
-                                        className="w-full p-2 border border-custom rounded-lg bg-input text-foreground"
-                                        rows="3"
-                                    />
-                                    <div className="flex justify-end space-x-2 mt-2">
-                                        <button onClick={() => setEditingCommentId(null)} className="text-sm px-3 py-1 rounded bg-gray-200 text-gray-800 hover:bg-gray-300">Batal</button>
-                                        <button onClick={() => handleUpdate(comment.id)} className="text-sm px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Simpan</button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground mt-1">{comment.content}</p>
-                            )}
+                            <p className="text-xs text-muted-foreground mt-2 ml-2">
+                                {new Date(comment.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(comment.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </p>
                     </div>
-                </div>
-            ))}
+                ))
+            )}
         </div>
     );
 };
@@ -226,43 +272,43 @@ export default function BeritaDetailPage() {
         <div className={`bg-background font-sans min-h-screen ${canCopyClass}`}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
                 <div className="mb-6">
-                    <Link to="/berita" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold text-sm">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
+                    <Link to="/berita" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-colors duration-200 group">
+                        <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
                         Kembali ke Daftar Berita
                     </Link>
                 </div>
 
                 <div className="max-w-4xl mx-auto">
-                    <div className="bg-card rounded-2xl shadow-lg overflow-hidden border border-custom">
+                    <div className="bg-card rounded-2xl shadow-lg overflow-hidden border border-custom hover:shadow-xl transition-shadow duration-300">
                        <ImageGallery images={news.images} />
-                       <div className="p-8">
-                            <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-800">
+                       <div className="p-8 md:p-10">
+                            <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors duration-200">
                                 {news.category?.name || 'Tanpa Kategori'}
                             </span>
-                            <h1 className="text-4xl md:text-5xl font-extrabold text-card-foreground tracking-tight">{news.title}</h1>
+                            <h1 className="text-4xl md:text-5xl font-extrabold text-card-foreground tracking-tight leading-tight">{news.title}</h1>
                             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-6 border-y border-custom py-4">
                                <InfoTag icon={<User className="w-4 h-4 text-muted-foreground" />} text={news.author?.name || 'Admin'} />
                                <InfoTag icon={<Calendar className="w-4 h-4 text-muted-foreground" />} text={new Date(news.publishedAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })} />
                             </div>
-                            <div className="mt-6 prose lg:prose-xl max-w-none" dangerouslySetInnerHTML={{ __html: news.content?.replace(/\n/g, '<br />') || 'Konten tidak tersedia.' }}>
+                            <div className="mt-8 prose lg:prose-xl max-w-none leading-relaxed" dangerouslySetInnerHTML={{ __html: news.content?.replace(/\n/g, '<br />') || 'Konten tidak tersedia.' }}>
                             </div>
                        </div>
                     </div>
                 </div>
 
-                <div className="max-w-4xl mx-auto mt-8">
-                    <div className="bg-card rounded-2xl shadow-lg border border-custom p-8">
-                        <h2 className="text-2xl font-bold text-card-foreground flex items-center gap-2">
-                            <MessageSquare />
+                <div className="max-w-4xl mx-auto mt-12">
+                    <div className="bg-card rounded-2xl shadow-lg border border-custom p-8 md:p-10 hover:shadow-xl transition-shadow duration-300">
+                        <h2 className="text-2xl font-bold text-card-foreground flex items-center gap-3">
+                            <MessageSquare className="text-indigo-600" />
                             Komentar ({comments.length})
                         </h2>
 
                         {isAuthenticated ? (
                             <CommentForm postId={id} onCommentPosted={fetchComments} />
                         ) : (
-                            <div className="mt-6 text-center bg-background p-6 rounded-lg border border-custom">
+                            <div className="mt-6 text-center bg-background p-6 rounded-lg border border-custom hover:border-indigo-300 transition-colors duration-200">
                                 <p className="text-muted-foreground">
-                                    <button onClick={() => openModal('login')} className="font-bold text-blue-500 hover:underline">Masuk</button> atau <button onClick={() => openModal('register')} className="font-bold text-blue-500 hover:underline">Daftar</button> untuk meninggalkan komentar.
+                                    <button onClick={() => openModal('login')} className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors duration-200">Masuk</button> atau <button onClick={() => openModal('register')} className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors duration-200">Daftar</button> untuk meninggalkan komentar.
                                 </p>
                             </div>
                         )}
