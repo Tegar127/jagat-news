@@ -12,7 +12,7 @@ const KontakPage = () => {
             <p className="mt-4 text-lg text-muted-foreground">
                 Halaman ini sedang dalam tahap pengembangan.
                 <br />
-                Silakan gunakan widget chat di pojok kanan bawah untuk menghubungi kami.
+                Silakan hubungi kami melalui email di info@jagatnews.com
             </p>
             <Link 
                 to="/" 

@@ -13,8 +13,7 @@ import AboutPage from './pages/AboutPage';
 import LoginModal from './components/LoginModal';
 import ProfilePage from './pages/ProfilePage';
 import SearchResultsPage from './pages/SearchResultsPage'; // Impor Halaman Hasil Pencarian
-import KontakPage from './pages/KontakPage'; // Impor Halaman Kontak (Chat)
-import ChatWidget from './components/ChatWidget';
+import KontakPage from './pages/KontakPage'; // Impor Halaman Kontak
 
 // Import Layout dan Halaman Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -23,7 +22,6 @@ import BeritaAdminPage from './components/Admin/BeritaAdminPage';
 import KategoriAdminPage from './components/Admin/KategoriAdminPage';
 import UserAdminPage from './components/Admin/UserAdminPage';
 import PromoAdminPage from './components/Admin/PromoAdminPage';
-import ChatAdminPage from './components/Admin/ChatAdminPage'; // Impor Halaman Chat Admin
 
 // Impor dari Context dan Protected Route
 import { AuthProvider } from './context/AuthContext';
@@ -38,7 +36,6 @@ const PublicLayout = ({ theme, toggleTheme }) => (
         </main>
         <Footer />
         <LoginModal />
-        <ChatWidget /> 
     </div>
 );
 
@@ -71,7 +68,6 @@ const AppContent = ({ theme, toggleTheme }) => {
                 <Route path="berita" element={<BeritaAdminPage />} />
                 <Route path="kategori" element={<KategoriAdminPage />} />
                 <Route path="users" element={<UserAdminPage />} />
-                <Route path="chat" element={<ChatAdminPage />} />
             </Route>
             
             <Route path="*" element={

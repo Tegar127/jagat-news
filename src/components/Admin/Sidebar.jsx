@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Newspaper, Users, Tag, LogOut, X, Megaphone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
@@ -16,7 +16,6 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }) => {
         { to: "/admin/promo", icon: <Megaphone size={20} />, text: "Promo", roles: ['ADMIN', 'ADMINISTRATOR'] },
         { to: "/admin/berita", icon: <Newspaper size={20} />, text: "Berita", roles: ['ADMIN', 'ADMINISTRATOR'] },
         { to: "/admin/kategori", icon: <Tag size={20} />, text: "Kategori", roles: ['ADMIN', 'ADMINISTRATOR'] },
-        { to: "/admin/chat", icon: <MessageSquare size={20} />, text: "Chat", roles: ['ADMIN', 'ADMINISTRATOR'] },
         { to: "/admin/users", icon: <Users size={20} />, text: "Pengguna", roles: ['ADMINISTRATOR'] }, // Hanya ada satu 'Pengguna'
     ];
 
