@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient'; // Impor Supabase
 import { useAuth } from '../../context/AuthContext'; // Impor untuk mendapatkan user ID
+import { useToast } from '../../context/ToastContext'; // Impor untuk notifikasi toast
 
 const initialValue = [
     {
@@ -96,6 +97,7 @@ const Toolbar = () => {
 // Main Component
 const BeritaAdminPage = () => {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [newsData, setNewsData] = useState([]);
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [currentNews, setCurrentNews] = useState({
@@ -299,9 +301,10 @@ const BeritaAdminPage = () => {
             
             await fetchNews();
             setIsFormVisible(false);
+            showToast('Berita berhasil disimpan', 'success');
 
         } catch (error) {
-            alert('Terjadi kesalahan: ' + error.message);
+            showToast('Terjadi kesalahan: ' + error.message, 'error');
         } finally {
             setSubmitting(false);
         }
@@ -314,8 +317,9 @@ const BeritaAdminPage = () => {
                 await supabase.from('Image').delete().eq('postId', id);
                 await supabase.from('Post').delete().eq('id', id);
                 await fetchNews();
+                showToast('Berita berhasil dihapus', 'success');
             } catch (error) {
-                alert('Gagal menghapus berita: ' + error.message);
+                showToast('Gagal menghapus berita: ' + error.message, 'error');
                 setLoading(false);
             }
         }

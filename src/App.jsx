@@ -25,6 +25,7 @@ import PromoAdminPage from './components/Admin/PromoAdminPage';
 
 // Impor dari Context dan Protected Route
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Layout untuk halaman publik (yang memiliki Navbar dan Footer)
@@ -101,7 +102,9 @@ export default function App() {
     return (
         <Router>
             <AuthProvider>
-                <AppContent theme={theme} toggleTheme={toggleTheme} />
+                <ToastProvider>
+                    <AppContent theme={theme} toggleTheme={toggleTheme} />
+                </ToastProvider>
             </AuthProvider>
         </Router>
     );
