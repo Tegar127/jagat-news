@@ -14,15 +14,15 @@ const DashboardPage = () => {
 
     return (
         <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Dashboard</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map(stat => <StatsCard key={stat.title} {...stat} />)}
             </div>
 
-            <div className="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-200/80">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Aktivitas Terkini</h2>
+            <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200/80 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Aktivitas Terkini</h2>
                 {/* Di sini Anda bisa menambahkan komponen untuk menampilkan log aktivitas atau berita terbaru */}
-                <p className="text-gray-600">Fitur aktivitas terkini sedang dalam pengembangan.</p>
+                <p className="text-gray-600 dark:text-gray-400">Fitur aktivitas terkini sedang dalam pengembangan.</p>
             </div>
         </div>
     );
